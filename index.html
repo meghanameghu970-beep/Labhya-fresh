@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Labhya — Government Schemes Made Simple</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --purple: #5B2DD6;
+      --purple-dark: #4A21B8;
+      --lavender: #EFEAFF;
+      --lavender-soft: #F7F5FF;
+      --lavender-border: #DCD4FA;
+      --navy: #1E1B4B;
+      --green: #18A957;
+      --green-dark: #148F49;
+      --red: #E53935;
+      --yellow: #FFCA28;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--navy);
+      background: #FAF9FF;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    .btn-purple {
+      background: var(--purple);
+      color: #fff;
+      transition: background-color 0.15s ease;
+    }
+    .btn-purple:hover { background: var(--purple-dark); }
+    .btn-green {
+      background: var(--green);
+      color: #fff;
+      transition: background-color 0.15s ease;
+    }
+    .btn-green:hover { background: var(--green-dark); }
+    .btn-red {
+      background: var(--red);
+      color: #fff;
+      transition: background-color 0.15s ease;
+    }
+    .btn-red:hover { background: #C62828; }
+    .card-soft {
+      background: #fff;
+      border: 1.5px solid #EAE6FA;
+      border-radius: 18px;
+      box-shadow: 0 4px 18px rgba(91, 45, 214, 0.05);
+    }
+    .card-selectable:hover {
+      border-color: var(--purple);
+      box-shadow: 0 6px 20px rgba(91, 45, 214, 0.10);
+    }
+    .card-selected {
+      border-color: var(--purple) !important;
+      background: #F4F0FF !important;
+      box-shadow: 0 6px 20px rgba(91, 45, 214, 0.14) !important;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: #D4CCF5; border-radius: 999px; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden px-4 py-2.5 rounded-full bg-[#1E1B4B] text-white text-sm font-medium shadow-lg"></div>
+
+  <!-- Modal Container -->
+  <div id="modal-backdrop" class="fixed inset-0 z-50 hidden bg-black/40 flex items-center justify-center p-4">
+    <div id="modal-content" class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#EAE6FA] max-h-[90vh] overflow-y-auto"></div>
+  </div>
+
+  <!-- Main App Root -->
+  <div id="app" class="flex-1 flex flex-col min-h-screen"></div>
+
+  <!-- Screen Navigator Drawer -->
+  <div class="fixed bottom-4 right-4 z-40">
+    <button id="nav-toggle-btn" onclick="toggleScreenDrawer()" class="flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#1E1B4B]/90 hover:bg-[#1E1B4B] text-white text-xs font-semibold shadow-lg">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      <span id="nav-badge">Screen 1 / 26</span>
+    </button>
+    <div id="screen-drawer" class="hidden absolute bottom-12 right-0 w-72 bg-white rounded-2xl shadow-2xl border border-[#DCD4FA] p-3 max-h-[70vh] overflow-y-auto">
+      <div class="flex items-center justify-between px-2 pb-2 mb-2 border-b border-[#EFEAFF]">
+        <span class="text-xs font-bold uppercase tracking-wider text-[#5B2DD6]">All Screens</span>
+        <button onclick="toggleScreenDrawer()" class="text-xs text-slate-400 hover:text-slate-700 font-semibold">Close</button>
+      </div>
+      <div id="screen-drawer-list" class="space-y-1 text-xs"></div>
+    </div>
+  </div>
+
+<script>
+// ============================================================
+// LANGUAGES & FULL APP TRANSLATIONS (5 LANGUAGES)
+// ============================================================
+const LANGUAGES = [
+  { code: 'en', label: 'English', native: 'English', speech: 'en-IN', sub: 'Continue in English' },
+  { code: 'hi', label: 'हिन्दी (Hindi)', native: 'हिन्दी', speech: 'hi-IN', sub: 'हिन्दी में जारी रखें' },
+  { code: 'kn', label: 'ಕನ್ನಡ (Kannada)', native: 'ಕನ್ನಡ', speech: 'kn-IN', sub: 'ಕನ್ನಡದಲ್ಲಿ ಮುಂದುವರಿಸಿ' },
+  { code: 'ta', label: 'தமிழ் (Tamil)', native: 'தமிழ்', speech: 'ta-IN', sub: 'தமிழில் தொடரவும்' },
+  { code: 'te', label: 'తెలుగు (Telugu)', native: 'తెలుగు', speech: 'te-IN', sub: 'తెలుగులో కొనసాగండి' }
+];
+
+const I18N = {
+  en: {
+    tagline: 'Government Schemes\nMade Simple',
+    getStarted: 'Get Started',
+    chooseLangTitle: 'Choose your language',
+    chooseLangSub: 'Select a language to use across Labhya.',
+    continueBtn: 'Continue',
+    enterMobile: 'Enter your mobile number',
+    mobileSub: 'We will send you an OTP to login.',
+    mobilePlaceholder: 'Mobile number',
+    getOtp: 'Get OTP',
+    needHelp: 'Need help?',
+    enterOtp: 'Enter the OTP',
+    otpSentTo: 'We have sent a 6-digit OTP to',
+    didntReceive: "Didn't receive OTP?",
+    resendOtp: 'Resend OTP',
+    verify: 'Verify',
+    digiSub: 'Your documents, anytime',
+    digiPrompt: 'Get your documents easily from DigiLocker.',
+    yes: 'Yes',
+    no: 'No',
+    skipNow: 'Skip for now',
+    connectDigi: 'Connect DigiLocker',
+    connectDigiSub: 'You will be taken to DigiLocker to verify and give permission.',
+    maybeLater: 'Maybe Later',
+    digiDone: 'DigiLocker Connected',
+    digiDoneSub: 'Your documents are ready.',
+    startTitle: "Let's get to know you",
+    startSub: "We'll ask only what we need to find the right schemes for you.",
+    startBtn: 'Start',
+    askName: 'What is your name?',
+    namePlaceholder: 'Enter your name',
+    askDob: 'What is your date of birth?',
+    askGender: 'What is your gender?',
+    male: 'Male', female: 'Female', other: 'Other',
+    askPin: 'Enter your 6-digit PIN code',
+    foundArea: 'We found your area',
+    confirm: 'Confirm',
+    edit: 'Edit',
+    saveChanges: 'Save Changes',
+    askArea: 'Where do you live?',
+    rural: 'Rural / Village',
+    urban: 'Urban / City',
+    askOcc: 'What is your occupation?',
+    farmer: 'Farmer', worker: 'Worker', business: 'Business', student: 'Student', homemaker: 'Homemaker',
+    askEdu: 'What are you studying?',
+    askCaste: 'What is your caste/category?',
+    askDisability: 'Do you have a disability?',
+    profileComplete: 'Profile Complete!',
+    profileReviewSub: 'Review all your details below before entering Labhya.',
+    profileEditSub: 'Update any field below and click Save Changes.',
+    next: 'Next',
+    back: 'Back',
+    newChat: 'New Chat',
+    myDocs: 'My Docs',
+    findSchemes: 'Find Schemes',
+    history: 'History',
+    logout: 'Logout',
+    profile: 'Profile',
+    howHelp: 'How can I help you?',
+    howHelpSub: 'Find schemes, check eligibility or explore more options.',
+    checkElig: 'Check Eligibility',
+    others: 'Others',
+    askSomething: 'Ask me something...'
+  },
+  hi: {
+    tagline: 'सरकारी योजनाएं\nहुईं आसान',
+    getStarted: 'शुरू करें',
+    chooseLangTitle: 'अपनी भाषा चुनें',
+    chooseLangSub: 'पूरे लाभ्या ऐप में उपयोग करने के लिए एक भाषा चुनें।',
+    continueBtn: 'जारी रखें',
+    enterMobile: 'अपना मोबाइल नंबर दर्ज करें',
+    mobileSub: 'लॉगिन के लिए हम आपको एक OTP भेजेंगे।',
+    mobilePlaceholder: 'मोबाइल नंबर',
+    getOtp: 'OTP प्राप्त करें',
+    needHelp: 'मदद चाहिए?',
+    enterOtp: 'OTP दर्ज करें',
+    otpSentTo: 'हमने 6 अंकों का OTP भेजा है',
+    didntReceive: 'OTP नहीं मिला?',
+    resendOtp: 'OTP फिर से भेजें',
+    verify: 'सत्यापित करें',
+    digiSub: 'आपके दस्तावेज़, कभी भी',
+    digiPrompt: 'DigiLocker से अपने दस्तावेज़ आसानी से प्राप्त करें।',
+    yes: 'हाँ',
+    no: 'नहीं',
+    skipNow: 'अभी के लिए छोड़ें',
+    connectDigi: 'DigiLocker जोड़ें',
+    connectDigiSub: 'सत्यापन और अनुमति देने के लिए आपको DigiLocker पर ले जाया जाएगा।',
+    maybeLater: 'शायद बाद में',
+    digiDone: 'DigiLocker जुड़ गया',
+    digiDoneSub: 'आपके दस्तावेज़ तैयार हैं।',
+    startTitle: 'आइए आपके बारे में जानें',
+    startSub: 'सही योजनाएं खोजने के लिए हम केवल ज़रूरी जानकारी पूछेंगे।',
+    startBtn: 'शुरू करें',
+    askName: 'आपका नाम क्या है?',
+    namePlaceholder: 'अपना नाम दर्ज करें',
+    askDob: 'आपकी जन्मतिथि क्या है?',
+    askGender: 'आपका लिंग क्या है?',
+    male: 'पुरुष', female: 'महिला', other: 'अन्य',
+    askPin: 'अपना 6 अंकों का पिन कोड दर्ज करें',
+    foundArea: 'हमें आपका क्षेत्र मिल गया',
+    confirm: 'पुष्टि करें',
+    edit: 'संपादित करें',
+    saveChanges: 'बदलाव सहेजें',
+    askArea: 'आप कहाँ रहते हैं?',
+    rural: 'ग्रामीण / गाँव',
+    urban: 'शहरी / शहर',
+    askOcc: 'आपका व्यवसाय क्या है?',
+    farmer: 'किसान', worker: 'मज़दूर', business: 'व्यापार', student: 'छात्र', homemaker: 'गृहिणी',
+    askEdu: 'आप क्या पढ़ाई कर रहे हैं?',
+    askCaste: 'आपकी जाति/श्रेणी क्या है?',
+    askDisability: 'क्या आपको कोई दिव्यांगता है?',
+    profileComplete: 'प्रोफ़ाइल पूर्ण!',
+    profileReviewSub: 'लाभ्या में जाने से पहले नीचे अपने सभी विवरण देखें।',
+    profileEditSub: 'नीचे कोई भी जानकारी बदलें और बदलाव सहेजें पर क्लिक करें।',
+    next: 'आगे बढ़ें',
+    back: 'पीछे',
+    newChat: 'नई चैट',
+    myDocs: 'मेरे दस्तावेज़',
+    findSchemes: 'योजनाएं खोजें',
+    history: 'इतिहास',
+    logout: 'लॉगआउट',
+    profile: 'प्रोफ़ाइल',
+    howHelp: 'मैं आपकी क्या मदद कर सकता हूँ?',
+    howHelpSub: 'योजनाएं खोजें, पात्रता जांचें या अन्य विकल्प देखें।',
+    checkElig: 'पात्रता जांचें',
+    others: 'अन्य',
+    askSomething: 'मुझसे कुछ पूछें...'
+  },
+  kn: {
+    tagline: 'ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು\nಈಗ ಸರಳ',
+    getStarted: 'ಪ್ರಾರಂಭಿಸಿ',
+    chooseLangTitle: 'ನಿಮ್ಮ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ',
+    chooseLangSub: 'ಲಾಭ್ಯ ಆ್ಯಪ್‌ನಲ್ಲಿ ಬಳಸಲು ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ.',
+    continueBtn: 'ಮುಂದುವರಿಸಿ',
+    enterMobile: 'ನಿಮ್ಮ ಮೊಬೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ',
+    mobileSub: 'ಲಾಗಿನ್ ಆಗಲು ನಾವು ನಿಮಗೆ OTP ಕಳುಹಿಸುತ್ತೇವೆ.',
+    mobilePlaceholder: 'ಮೊಬೈಲ್ ಸಂಖ್ಯೆ',
+    getOtp: 'OTP ಪಡೆಯಿರಿ',
+    needHelp: 'ಸಹಾಯ ಬೇಕೇ?',
+    enterOtp: 'OTP ನಮೂದಿಸಿ',
+    otpSentTo: '6-ಅಂಕಿಯ OTP ಕಳುಹಿಸಲಾಗಿದೆ',
+    didntReceive: 'OTP ಬಂದಿಲ್ಲವೇ?',
+    resendOtp: 'OTP ಮರುಕಳುಹಿಸಿ',
+    verify: 'ಪರಿಶೀಲಿಸಿ',
+    digiSub: 'ನಿಮ್ಮ ದಾಖಲೆಗಳು, ಯಾವಾಗ ಬೇಕಾದರೂ',
+    digiPrompt: 'DigiLocker ನಿಂದ ನಿಮ್ಮ ದಾಖಲೆಗಳನ್ನು ಸುಲಭವಾಗಿ ಪಡೆಯಿರಿ.',
+    yes: 'ಹೌದು',
+    no: 'ಇಲ್ಲ',
+    skipNow: 'ಈಗ ಬಿಟ್ಟುಬಿಡಿ',
+    connectDigi: 'DigiLocker ಸಂಪರ್ಕಿಸಿ',
+    connectDigiSub: 'ಪರಿಶೀಲಿಸಲು ಮತ್ತು ಅನುಮತಿ ನೀಡಲು ನಿಮ್ಮನ್ನು DigiLocker ಗೆ ಕರೆದೊಯ್ಯಲಾಗುತ್ತದೆ.',
+    maybeLater: 'ನಂತರ',
+    digiDone: 'DigiLocker ಸಂಪರ್ಕಗೊಂಡಿದೆ',
+    digiDoneSub: 'ನಿಮ್ಮ ದಾಖಲೆಗಳು ಸಿದ್ಧವಾಗಿವೆ.',
+    startTitle: 'ನಿಮ್ಮ ಬಗ್ಗೆ ತಿಳಿದುಕೊಳ್ಳೋಣ',
+    startSub: 'ಸೂಕ್ತ ಯೋಜನೆಗಳನ್ನು ಹುಡುಕಲು ಅಗತ್ಯವಿರುವಷ್ಟೇ ಮಾಹಿತಿ ಕೇಳುತ್ತೇವೆ.',
+    startBtn: 'ಪ್ರಾರಂಭಿಸಿ',
+    askName: 'ನಿಮ್ಮ ಹೆಸರೇನು?',
+    namePlaceholder: 'ನಿಮ್ಮ ಹೆಸರು ನಮೂದಿಸಿ',
+    askDob: 'ನಿಮ್ಮ ಹುಟ್ಟಿದ ದಿನಾಂಕ ಯಾವುದು?',
+    askGender: 'ನಿಮ್ಮ ಲಿಂಗ ಯಾವುದು?',
+    male: 'ಪುರುಷ', female: 'ಮಹಿಳೆ', other: 'ಇತರೆ',
+    askPin: 'ನಿಮ್ಮ 6-ಅಂಕಿಯ ಪಿನ್ ಕೋಡ್ ನಮೂದಿಸಿ',
+    foundArea: 'ನಿಮ್ಮ ಪ್ರದೇಶ ಕಂಡುಬಂದಿದೆ',
+    confirm: 'ದೃಢೀಕರಿಸಿ',
+    edit: 'ತಿದ್ದುಪಡಿ',
+    saveChanges: 'ಬದಲಾವಣೆ ಉಳಿಸಿ',
+    askArea: 'ನೀವು ಎಲ್ಲಿ ವಾಸಿಸುತ್ತೀರಿ?',
+    rural: 'ಗ್ರಾಮೀಣ / ಹಳ್ಳಿ',
+    urban: 'ನಗರ / ಪಟ್ಟಣ',
+    askOcc: 'ನಿಮ್ಮ ವೃತ್ತಿ ಏನು?',
+    farmer: 'ರೈತ', worker: 'ಕಾರ್ಮಿಕ', business: 'ವ್ಯಾಪಾರ', student: 'ವಿದ್ಯಾರ್ಥಿ', homemaker: 'ಗೃಹಿಣಿ',
+    askEdu: 'ನೀವು ಏನು ಓದುತ್ತಿದ್ದೀರಿ?',
+    askCaste: 'ನಿಮ್ಮ ಜಾತಿ/ವರ್ಗ ಯಾವುದು?',
+    askDisability: 'ನಿಮಗೆ ಅಂಗವೈಕಲ್ಯವಿದೆಯೇ?',
+    profileComplete: 'ಪ್ರೊಫೈಲ್ ಪೂರ್ಣಗೊಂಡಿದೆ!',
+    profileReviewSub: 'ಮುಂದುವರಿಯುವ ಮೊದಲು ನಿಮ್ಮ ಎಲ್ಲಾ ವಿವರಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.',
+    profileEditSub: 'ಕೆಳಗಿನ ವಿವರಗಳನ್ನು ಬದಲಾಯಿಸಿ ಮತ್ತು ಉಳಿಸಿ.',
+    next: 'ಮುಂದೆ',
+    back: 'ಹಿಂದೆ',
+    newChat: 'ಹೊಸ ಚಾಟ್',
+    myDocs: 'ನನ್ನ ದಾಖಲೆಗಳು',
+    findSchemes: 'ಯೋಜನೆ ಹುಡುಕಿ',
+    history: 'ಇತಿಹಾಸ',
+    logout: 'ಲಾಗ್‌ಔಟ್',
+    profile: 'ಪ್ರೊಫೈಲ್',
+    howHelp: 'ನಾನು ನಿಮಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಲಿ?',
+    howHelpSub: 'ಯೋಜನೆಗಳನ್ನು ಹುಡುಕಿ, ಅರ್ಹತೆ ಪರಿಶೀಲಿಸಿ ಅಥವಾ ಇತರ ಆಯ್ಕೆಗಳನ್ನು ನೋಡಿ.',
+    checkElig: 'ಅರ್ಹತೆ ಪರಿಶೀಲಿಸಿ',
+    others: 'ಇತರೆ',
+    askSomething: 'ನನ್ನನ್ನು ಏನಾದರೂ ಕೇಳಿ...'
+  },
+  ta: {
+    tagline: 'அரசு திட்டங்கள்\nஇப்போது எளிமை',
+    getStarted: 'தொடங்கவும்',
+    chooseLangTitle: 'உங்கள் மொழியைத் தேர்ந்தெடுக்கவும்',
+    chooseLangSub: 'லப்யா செயலியில் பயன்படுத்த ஒரு மொழியைத் தேர்ந்தெடுக்கவும்.',
+    continueBtn: 'தொடரவும்',
+    enterMobile: 'உங்கள் மொபைல் எண்ணை உள்ளிடவும்',
+    mobileSub: 'உள்நுழைய OTP அனுப்புவோம்.',
+    mobilePlaceholder: 'மொபைல் எண்',
+    getOtp: 'OTP பெறுக',
+    needHelp: 'உதவி தேவையா?',
+    enterOtp: 'OTP ஐ உள்ளிடவும்',
+    otpSentTo: '6 இலக்க OTP அனுப்பப்பட்டது',
+    didntReceive: 'OTP வரவில்லையா?',
+    resendOtp: 'மீண்டும் OTP அனுப்பு',
+    verify: 'சரிபார்க்கவும்',
+    digiSub: 'உங்கள் ஆவணங்கள், எப்போதும்',
+    digiPrompt: 'DigiLocker இலிருந்து உங்கள் ஆவணங்களை எளிதாகப் பெறுங்கள்.',
+    yes: 'ஆம்',
+    no: 'இல்லை',
+    skipNow: 'இப்போதைக்கு தவிர்க்கவும்',
+    connectDigi: 'DigiLocker இணைக்கவும்',
+    connectDigiSub: 'சரிபார்த்து அனுமதி வழங்க DigiLocker க்கு அழைத்துச் செல்லப்படுவீர்கள்.',
+    maybeLater: 'பிறகு பார்க்கலாம்',
+    digiDone: 'DigiLocker இணைக்கப்பட்டது',
+    digiDoneSub: 'உங்கள் ஆவணங்கள் தயாராக உள்ளன.',
+    startTitle: 'உங்களைப் பற்றி அறிந்து கொள்வோம்',
+    startSub: 'சரியான திட்டங்களைக் கண்டறிய தேவையானவற்றை மட்டுமே கேட்போம்.',
+    startBtn: 'தொடங்கு',
+    askName: 'உங்கள் பெயர் என்ன?',
+    namePlaceholder: 'உங்கள் பெயரை உள்ளிடவும்',
+    askDob: 'உங்கள் பிறந்த தேதி என்ன?',
+    askGender: 'உங்கள் பாலினம் என்ன?',
+    male: 'ஆண்', female: 'பெண்', other: 'மற்றவை',
+    askPin: '6 இலக்க PIN குறியீட்டை உள்ளிடவும்',
+    foundArea: 'உங்கள் பகுதி கண்டறியப்பட்டது',
+    confirm: 'உறுதிப்படுத்து',
+    edit: 'திருத்து',
+    saveChanges: 'மாற்றங்களைச் சேமி',
+    askArea: 'நீங்கள் எங்கு வசிக்கிறீர்கள்?',
+    rural: 'கிராமம்',
+    urban: 'நகரம்',
+    askOcc: 'உங்கள் தொழில் என்ன?',
+    farmer: 'விவசாயி', worker: 'தொழிலாளி', business: 'வணிகம்', student: 'மாணவர்', homemaker: 'இல்லத்தரசி',
+    askEdu: 'நீங்கள் என்ன படிக்கிறீர்கள்?',
+    askCaste: 'உங்கள் சாதி/பிரிவு என்ன?',
+    askDisability: 'உங்களுக்கு மாற்றுத்திறன் உள்ளதா?',
+    profileComplete: 'சுயவிவரம் முடிந்தது!',
+    profileReviewSub: 'தொடர்வதற்கு முன் உங்கள் விவரங்களைச் சரிபார்க்கவும்.',
+    profileEditSub: 'கீழே உள்ள விவரங்களைத் திருத்தி சேமிக்கவும்.',
+    next: 'அடுத்து',
+    back: 'பின்',
+    newChat: 'புதிய உரையாடல்',
+    myDocs: 'என் ஆவணங்கள்',
+    findSchemes: 'திட்டங்கள் தேடு',
+    history: 'வரலாறு',
+    logout: 'வெளியேறு',
+    profile: 'சுயவிவரம்',
+    howHelp: 'நான் உங்களுக்கு எப்படி உதவ முடியும்?',
+    howHelpSub: 'திட்டங்களைத் தேடுங்கள், தகுதியைச் சரிபார்க்கவும்.',
+    checkElig: 'தகுதி சரிபார்',
+    others: 'மற்றவை',
+    askSomething: 'என்னிடம் ஏதாவது கேளுங்கள்...'
+  },
+  te: {
+    tagline: 'ప్రభుత్వ పథకాలు\nఇప్పుడు సులభం',
+    getStarted: 'ప్రారంభించండి',
+    chooseLangTitle: 'మీ భాషను ఎంచుకోండి',
+    chooseLangSub: 'లభ్య యాప్ అంతటా ఉపయోగించడానికి భాషను ఎంచుకోండి.',
+    continueBtn: 'కొనసాగండి',
+    enterMobile: 'మీ మొబైల్ నంబర్‌ను నమోదు చేయండి',
+    mobileSub: 'లాగిన్ కోసం మేము మీకు OTP పంపుతాము.',
+    mobilePlaceholder: 'మొబైల్ నంబర్',
+    getOtp: 'OTP పొందండి',
+    needHelp: 'సహాయం కావాలా?',
+    enterOtp: 'OTP నమోదు చేయండి',
+    otpSentTo: '6-అంకెల OTP పంపబడింది',
+    didntReceive: 'OTP రాలేదా?',
+    resendOtp: 'OTP మళ్లీ పంపండి',
+    verify: 'ధృవీకరించండి',
+    digiSub: 'మీ పత్రాలు, ఎప్పుడైనా',
+    digiPrompt: 'DigiLocker నుండి మీ పత్రాలను సులభంగా పొందండి.',
+    yes: 'అవును',
+    no: 'కాదు',
+    skipNow: 'ఇప్పటికి దాటవేయండి',
+    connectDigi: 'DigiLocker కనెక్ట్ చేయండి',
+    connectDigiSub: 'ధృవీకరించడానికి మరియు అనుమతి ఇవ్వడానికి మిమ్మల్ని DigiLocker కు తీసుకెళ్తారు.',
+    maybeLater: 'తర్వాత',
+    digiDone: 'DigiLocker కనెక్ట్ అయింది',
+    digiDoneSub: 'మీ పత్రాలు సిద్ధంగా ఉన్నాయి.',
+    startTitle: 'మీ గురించి తెలుసుకుందాం',
+    startSub: 'సరైన పథకాలను కనుగొనడానికి అవసరమైనవి మాత్రమే అడుగుతాము.',
+    startBtn: 'ప్రారంభించు',
+    askName: 'మీ పేరు ఏమిటి?',
+    namePlaceholder: 'మీ పేరు నమోదు చేయండి',
+    askDob: 'మీ పుట్టిన తేదీ ఏమిటి?',
+    askGender: 'మీ లింగం ఏమిటి?',
+    male: 'పురుషుడు', female: 'స్త్రీ', other: 'ఇతరులు',
+    askPin: 'మీ 6-అంకెల PIN కోడ్ నమోదు చేయండి',
+    foundArea: 'మీ ప్రాంతం కనుగొనబడింది',
+    confirm: 'నిర్ధారించండి',
+    edit: 'సవరించు',
+    saveChanges: 'మార్పులు సేవ్ చేయండి',
+    askArea: 'మీరు ఎక్కడ నివసిస్తున్నారు?',
+    rural: 'గ్రామీణ / గ్రామం',
+    urban: 'పట్టణ / నగరం',
+    askOcc: 'మీ వృత్తి ఏమిటి?',
+    farmer: 'రైతు', worker: 'కార్మికుడు', business: 'వ్యాపారం', student: 'విద్యార్థి', homemaker: 'గృహిణి',
+    askEdu: 'మీరు ఏమి చదువుతున్నారు?',
+    askCaste: 'మీ కులం/వర్గం ఏమిటి?',
+    askDisability: 'మీకు వైకల్యం ఉందా?',
+    profileComplete: 'ప్రొఫైల్ పూర్తయింది!',
+    profileReviewSub: 'కొనసాగే ముందు మీ వివరాలన్నింటినీ సమీక్షించండి.',
+    profileEditSub: 'దిగువ ఏదైనా ఫీల్డ్‌ను సవరించి సేవ్ చేయండి.',
+    next: 'తరువాత',
+    back: 'వెనుకకు',
+    newChat: 'కొత్త చాట్',
+    myDocs: 'నా పత్రాలు',
+    findSchemes: 'పథకాలు వెతకండి',
+    history: 'చరిత్ర',
+    logout: 'లాగ్‌అవుట్',
+    profile: 'ప్రొఫైల్',
+    howHelp: 'నేను మీకు ఎలా సహాయం చేయగలను?',
+    howHelpSub: 'పథకాలను కనుగొనండి, అర్హతను తనిఖీ చేయండి.',
+    checkElig: 'అర్హత తనిఖీ',
+    others: 'ఇతరాలు',
+    askSomething: 'నన్ను ఏదైనా అడగండి...'
+  }
+};
+
+function t(key) {
+  const dict = I18N[state.langCode] || I18N.en;
+  return dict[key] || I18N.en[key] || key;
+}
+
+const PIN_DIRECTORY = {
+  '560001': { city: 'Bengaluru', state: 'Karnataka' },
+  '560034': { city: 'Koramangala, Bengaluru', state: 'Karnataka' },
+  '570001': { city: 'Mysuru', state: 'Karnataka' },
+  '110001': { city: 'New Delhi', state: 'Delhi' },
+  '400001': { city: 'Mumbai', state: 'Maharashtra' },
+  '600001': { city: 'Chennai', state: 'Tamil Nadu' },
+  '500001': { city: 'Hyderabad', state: 'Telangana' }
+};
+
+const SCHEMES = [
+  { id: 'gruha-lakshmi', name: 'Gruha Lakshmi Scheme', level: 'Karnataka State', category: 'Women & Family', benefit: '₹2,000 / month direct bank transfer', desc: 'Monthly financial assistance to women heads of households in Karnataka.', criteria: { gender: ['Female'], state: 'Karnataka' }, docs: ['Aadhaar Card', 'Ration Card', 'Bank Passbook'], applyUrl: 'https://sevasindhugs.karnataka.gov.in/' },
+  { id: 'pm-kisan', name: 'PM-KISAN Samman Nidhi', level: 'Central Govt', category: 'Agriculture', benefit: '₹6,000 / year in 3 equal installments', desc: 'Income support for all landholding farmer families across India.', criteria: { occupation: ['Farmer'] }, docs: ['Aadhaar Card', 'Land Record (RTC)', 'Bank Account'], applyUrl: 'https://pmkisan.gov.in/' },
+  { id: 'yuva-nidhi', name: 'Yuva Nidhi Scheme', level: 'Karnataka State', category: 'Education & Youth', benefit: '₹3,000 / month (Graduates) · ₹1,500 / month (Diploma)', desc: 'Unemployment allowance for recent graduates and diploma holders in Karnataka.', criteria: { occupation: ['Student'], state: 'Karnataka' }, docs: ['Degree / Diploma Certificate', 'Aadhaar Card', 'Domicile Certificate'], applyUrl: 'https://sevasindhugs.karnataka.gov.in/' },
+  { id: 'vidyasiri', name: 'Vidyasiri Scholarship', level: 'Karnataka State', category: 'Education & Youth', benefit: '₹1,500 / month food & accommodation support', desc: 'Post-matric scholarship for SC/ST, OBC, and minority students pursuing higher education.', criteria: { occupation: ['Student'], category: ['SC/ST', 'OBC'] }, docs: ['Caste Certificate', 'Income Certificate', 'College ID'], applyUrl: 'https://ssp.postmatric.karnataka.gov.in/' },
+  { id: 'ayushman-bharat', name: 'Ayushman Bharat (PM-JAY)', level: 'Central Govt', category: 'Healthcare', benefit: 'Up to ₹5,00,000 / year health coverage', desc: 'Cashless secondary and tertiary care hospitalization across empaneled hospitals.', criteria: { all: true }, docs: ['Aadhaar Card', 'Ration Card'], applyUrl: 'https://pmjay.gov.in/' },
+  { id: 'pm-mudra', name: 'PM Mudra Yojana (PMMY)', level: 'Central Govt', category: 'Business & MSME', benefit: 'Collateral-free business loans up to ₹10 Lakh', desc: 'Micro-credit support for small businesses, artisans, and self-employed workers.', criteria: { occupation: ['Business', 'Worker'] }, docs: ['Aadhaar Card', 'PAN Card', 'Business Plan'], applyUrl: 'https://www.mudra.org.in/' },
+  { id: 'udid-pension', name: 'UDID & Disability Pension', level: 'Central & State', category: 'Social Welfare', benefit: '₹1,400 – ₹2,000 / month + travel concessions', desc: 'Monthly financial assistance and Unique Disability ID benefits for persons with disabilities.', criteria: { disability: ['Yes'] }, docs: ['Disability Certificate', 'Aadhaar Card', 'Bank Passbook'], applyUrl: 'https://www.swavlambancard.gov.in/' },
+  { id: 'pm-awas', name: 'PM Awas Yojana (Gramin / Urban)', level: 'Central Govt', category: 'Housing', benefit: 'Up to ₹2.5 Lakh housing subsidy', desc: 'Financial assistance for building a pucca house in rural or urban areas.', criteria: { all: true }, docs: ['Aadhaar Card', 'Income Certificate', 'Residence Proof'], applyUrl: 'https://pmaymis.gov.in/' }
+];
+
+const INITIAL_DOCS = [
+  { id: 'aadhaar', name: 'Aadhaar Card', issuer: 'UIDAI', status: 'Verified', updated: 'Synced via DigiLocker', number: 'XXXX-XXXX-4821' },
+  { id: 'pan', name: 'PAN Card', issuer: 'Income Tax Dept', status: 'Verified', updated: 'Synced via DigiLocker', number: 'ABCDE1234F' },
+  { id: 'income', name: 'Income Certificate', issuer: 'Govt of Karnataka', status: 'Pending', updated: 'Upload or fetch from DigiLocker', number: 'Not linked' },
+  { id: 'caste', name: 'Caste / Category Certificate', issuer: 'Revenue Dept', status: 'Pending', updated: 'Optional for reserved categories', number: 'Not linked' },
+  { id: 'ration', name: 'Ration Card', issuer: 'Food & Civil Supplies', status: 'Verified', updated: 'Synced via DigiLocker', number: 'KA-BLR-90231' }
+];
+
+const SCREEN_LIST = [
+  { id: 'welcome', phase: 1, num: 1, title: 'Welcome Screen' },
+  { id: 'language', phase: 1, num: 2, title: 'Language Selection' },
+  { id: 'mobile', phase: 1, num: 3, title: 'Login with Mobile Number' },
+  { id: 'otp', phase: 1, num: 4, title: 'OTP Verification' },
+  { id: 'digilocker-opt', phase: 1, num: 5, title: 'DigiLocker Optional' },
+  { id: 'digilocker-connect', phase: 1, num: 6, title: 'Connect DigiLocker' },
+  { id: 'digilocker-done', phase: 1, num: 7, title: 'DigiLocker Connected' },
+  { id: 'start-profile', phase: 1, num: 8, title: 'Start Profile' },
+  { id: 'name', phase: 1, num: 9, title: 'Enter Name' },
+  { id: 'dob', phase: 1, num: 10, title: 'Date of Birth' },
+  { id: 'gender', phase: 1, num: 11, title: 'Gender Selection' },
+  { id: 'pincode', phase: 1, num: 12, title: 'Enter PIN Code' },
+  { id: 'location', phase: 1, num: 13, title: 'Confirm Location' },
+  { id: 'rural-urban', phase: 1, num: 14, title: 'Rural / Urban Selection' },
+  { id: 'occupation', phase: 1, num: 15, title: 'Occupation Selection' },
+  { id: 'education', phase: 1, num: 16, title: 'Education Selection' },
+  { id: 'caste', phase: 1, num: 17, title: 'Caste / Category' },
+  { id: 'disability', phase: 1, num: 18, title: 'Disability Selection' },
+  { id: 'profile-complete', phase: 1, num: 19, title: 'Profile Complete' },
+  { id: 'dashboard', phase: 2, num: 20, title: 'Main Dashboard' },
+  { id: 'mydocs', phase: 2, num: 21, title: 'My Documents' },
+  { id: 'find-schemes', phase: 2, num: 22, title: 'Find Schemes' },
+  { id: 'eligibility', phase: 2, num: 23, title: 'Check Eligibility' },
+  { id: 'history', phase: 2, num: 24, title: 'History' },
+  { id: 'profile', phase: 2, num: 25, title: 'User Profile' },
+  { id: 'others', phase: 2, num: 26, title: 'Other Options' }
+];
+
+function loadSavedStore() {
+  try {
+    const raw = localStorage.getItem('labhya_store_v1');
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return { savedProfiles: {}, loggedInMobile: '', langCode: 'en' };
+}
+
+function persistStore() {
+  try {
+    localStorage.setItem('labhya_store_v1', JSON.stringify({
+      savedProfiles: state.savedProfiles,
+      loggedInMobile: state.loggedInMobile,
+      langCode: state.langCode
+    }));
+  } catch (e) {}
+}
+
+const stored = loadSavedStore();
+
+let state = {
+  screen: 'welcome',
+  langCode: stored.langCode || 'en',
+  savedProfiles: stored.savedProfiles || {},
+  loggedInMobile: stored.loggedInMobile || '',
+  mobile: stored.loggedInMobile || '',
+  generatedOtp: '',
+  otp: ['', '', '', '', '', ''],
+  otpTimer: 30,
+  digiLockerConnected: false,
+  name: '',
+  dobDay: '',
+  dobMonth: '',
+  dobYear: '',
+  gender: '',
+  pincode: ['', '', '', '', '', ''],
+  city: '',
+  stateName: '',
+  areaType: '',
+  occupation: '',
+  education: '',
+  category: '',
+  disability: '',
+  editingSummary: false,
+  editingMainProfile: false,
+  schemeSearch: '',
+  schemeCategory: 'All',
+  chatInput: '',
+  chatMessages: [],
+  docs: JSON.parse(JSON.stringify(INITIAL_DOCS)),
+  history: [],
+  mobileSidebarOpen: false
+};
+
+// If already logged in (not logged out), restore profile for that mobile
+if (state.loggedInMobile && state.savedProfiles[state.loggedInMobile]) {
+  Object.assign(state, state.savedProfiles[state.loggedInMobile]);
+}
+
+let otpInterval = null;
+
+// ============================================================
+// HELPERS & SVGS
+// ============================================================
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => el.classList.add('hidden'), 2600);
+}
+
+function speakText(text) {
+  try {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      const langObj = LANGUAGES.find(l => l.code === state.langCode) || LANGUAGES[0];
+      u.lang = langObj.speech;
+      u.rate = 0.95;
+      window.speechSynthesis.speak(u);
+      showToast('🔊 ' + text.slice(0, 44) + (text.length > 44 ? '...' : ''));
+    }
+  } catch (e) {}
+}
+
+function goTo(screenId) {
+  state.screen = screenId;
+  state.mobileSidebarOpen = false;
+  if (screenId === 'otp') startOtpTimer();
+  else clearInterval(otpInterval);
+  render();
+}
+
+function startOtpTimer() {
+  clearInterval(otpInterval);
+  state.otpTimer = 30;
+  otpInterval = setInterval(() => {
+    if (state.otpTimer > 0) {
+      state.otpTimer--;
+      const el = document.getElementById('otp-timer-text');
+      if (el) el.textContent = `${t('resendOtp')} (00:${String(state.otpTimer).padStart(2, '0')})`;
+    } else {
+      clearInterval(otpInterval);
+    }
+  }, 1000);
+}
+
+function labhyaLogoSVG(size = 56) {
+  return `
+  <svg width="${size}" height="${Math.round(size * 0.72)}" viewBox="0 0 100 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M48 64C32 62 12 48 10 26C28 24 44 38 48 64Z" fill="#5B2DD6"/>
+    <path d="M50 62C42 44 40 20 50 4C60 20 58 44 50 62Z" fill="#FFCA28"/>
+    <path d="M52 64C68 62 88 48 90 26C72 24 56 38 52 64Z" fill="#18A957"/>
+  </svg>`;
+}
+
+function ruralLandscapeSVG(heightClass = 'h-36') {
+  return `
+  <svg class="w-full ${heightClass} block select-none" viewBox="0 0 1200 220" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,120 Q200,45 430,115 T880,95 T1200,85 L1200,220 L0,220 Z" fill="#E3F0FF" opacity="0.8"/>
+    <path d="M0,145 Q280,85 560,145 T1200,120 L1200,220 L0,220 Z" fill="#BCE897"/>
+    <path d="M0,165 Q360,120 760,170 T1200,145 L1200,220 L0,220 Z" fill="#A6DF7B"/>
+    <path d="M120,220 C175,180 230,170 250,145 C235,172 205,195 190,220 Z" fill="#FFF3B0"/>
+    <g transform="translate(150, 96)">
+      <rect x="12" y="24" width="54" height="34" rx="2" fill="#FFFFFF"/>
+      <polygon points="6,26 39,4 72,26" fill="#E5533D"/>
+      <rect x="20" y="10" width="7" height="12" fill="#D8432E"/>
+      <rect x="33" y="38" width="12" height="20" rx="1" fill="#3B3F5C"/>
+      <rect x="18" y="34" width="9" height="9" rx="1" fill="#60A5FA"/>
+      <rect x="51" y="34" width="9" height="9" rx="1" fill="#60A5FA"/>
+    </g>
+    <g transform="translate(115, 90)">
+      <rect x="11" y="38" width="5" height="22" fill="#6D4C41"/>
+      <ellipse cx="13.5" cy="24" rx="13" ry="20" fill="#2E9E5B"/>
+    </g>
+    <g transform="translate(232, 86)">
+      <rect x="12" y="40" width="5" height="24" fill="#6D4C41"/>
+      <ellipse cx="14.5" cy="24" rx="14" ry="22" fill="#27AE60"/>
+    </g>
+  </svg>`;
+}
+
+function languagePillHTML() {
+  return `
+  <div class="relative inline-block">
+    <select aria-label="Language" onchange="changeLanguage(this.value)" class="appearance-none bg-white border border-[#DCD4FA] text-[#1E1B4B] text-sm font-semibold rounded-full pl-4 pr-9 py-1.5 cursor-pointer focus:outline-none focus:border-[#5B2DD6]">
+      ${LANGUAGES.map(l => `<option value="${l.code}" ${state.langCode === l.code ? 'selected' : ''}>${l.label}</option>`).join('')}
+    </select>
+    <svg class="w-4 h-4 text-[#5B2DD6] pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+  </div>`;
+}
+
+function changeLanguage(code) {
+  state.langCode = code;
+  persistStore();
+  const langObj = LANGUAGES.find(l => l.code === code);
+  if (langObj) showToast('Language: ' + langObj.native);
+  render();
+}
+
+function speakerBtnHTML(textToSpeak) {
+  const safe = textToSpeak.replace(/'/g, "\\'");
+  return `
+  <button onclick="speakText('${safe}')" title="Listen" class="w-9 h-9 rounded-full bg-[#EFEAFF] hover:bg-[#E1D7FF] text-[#5B2DD6] flex items-center justify-center">
+    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+  </button>`;
+}
+
+function onboardingHeaderHTML({ backScreen = null, step = null, totalSteps = 11, speak = '' }) {
+  const dots = step !== null ? `
+    <div class="flex items-center gap-1.5">
+      ${Array.from({ length: totalSteps }, (_, i) => {
+        const idx = i + 1;
+        if (idx < step) return `<span class="w-2.5 h-2.5 rounded-full bg-[#18A957]"></span>`;
+        if (idx === step) return `<span class="w-6 h-2.5 rounded-full bg-[#5B2DD6]"></span>`;
+        return `<span class="w-2.5 h-2.5 rounded-full bg-[#E2DCF8]"></span>`;
+      }).join('')}
+    </div>` : `<div></div>`;
+
+  return `
+  <header class="w-full max-w-4xl mx-auto px-6 pt-5 pb-3 flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      ${backScreen ? `
+        <button onclick="goTo('${backScreen}')" class="w-9 h-9 rounded-full hover:bg-[#EFEAFF] text-[#1E1B4B] flex items-center justify-center" title="${t('back')}">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        </button>` : `<div class="flex items-center gap-2">${labhyaLogoSVG(34)}<span class="font-bold text-[#5B2DD6] text-lg">Labhya</span></div>`}
+    </div>
+    <div class="hidden sm:flex justify-center">${dots}</div>
+    <div class="flex items-center gap-2.5">
+      ${speak ? speakerBtnHTML(speak) : ''}
+      ${languagePillHTML()}
+    </div>
+  </header>
+  ${step !== null ? `<div class="sm:hidden flex justify-center pb-2">${dots}</div>` : ''}`;
+}
+
+// ============================================================
+// PHASE 1: ONBOARDING SCREENS
+// ============================================================
+function renderOnboarding() {
+  switch (state.screen) {
+    case 'welcome':
+      return `
+      <div class="w-full flex-1 flex flex-col justify-between bg-white">
+        <div class="w-full max-w-6xl mx-auto px-6 pt-5 flex justify-end">
+          ${languagePillHTML()}
+        </div>
+        <div class="w-full max-w-2xl mx-auto flex-1 flex flex-col items-center justify-center px-6 text-center py-8">
+          <div class="mb-3">${labhyaLogoSVG(86)}</div>
+          <h1 class="text-5xl sm:text-6xl font-extrabold text-[#5B2DD6] tracking-tight mb-3">Labhya</h1>
+          <p class="text-xl sm:text-2xl font-semibold text-[#1E1B4B] leading-snug mb-8 whitespace-pre-line">${t('tagline')}</p>
+          <button onclick="handleGetStarted()" class="btn-purple px-10 py-4 rounded-full text-lg font-bold shadow-lg shadow-[#5B2DD6]/25 flex items-center gap-2.5">
+            <span>${t('getStarted')}</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+          </button>
+        </div>
+        <div class="w-full overflow-hidden">${ruralLandscapeSVG('h-40 sm:h-52')}</div>
+      </div>`;
+
+    case 'language':
+      return `
+      <div class="flex-1 flex flex-col bg-[#FAF9FF]">
+        ${onboardingHeaderHTML({ backScreen: 'welcome', speak: t('chooseLangTitle') })}
+        <main class="flex-1 flex items-center justify-center px-4 py-8">
+          <div class="card-soft w-full max-w-lg p-8 text-center">
+            <div class="w-14 h-14 rounded-2xl bg-[#EFEAFF] text-[#5B2DD6] flex items-center justify-center mx-auto mb-4 text-2xl">🌐</div>
+            <h2 class="text-2xl font-bold text-[#1E1B4B] mb-2">${t('chooseLangTitle')}</h2>
+            <p class="text-sm text-slate-500 mb-6">${t('chooseLangSub')}</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-7 text-left">
+              ${LANGUAGES.map(l => `
+                <button onclick="selectLanguageAndStay('${l.code}')" class="card-soft card-selectable p-4 flex items-center justify-between ${state.langCode === l.code ? 'card-selected' : ''}">
+                  <div>
+                    <div class="font-bold text-base text-[#1E1B4B]">${l.native}</div>
+                    <div class="text-xs text-slate-500">${l.sub}</div>
+                  </div>
+                  <span class="w-5 h-5 rounded-full border-2 flex items-center justify-center ${state.langCode === l.code ? 'border-[#5B2DD6]' : 'border-slate-300'}">
+                    ${state.langCode === l.code ? '<span class="w-2.5 h-2.5 rounded-full bg-[#5B2DD6]"></span>' : ''}
+                  </span>
+                </button>`).join('')}
+            </div>
+            <button onclick="goTo('mobile')" class="btn-purple w-full py-3.5 rounded-full text-base font-bold shadow-md">${t('continueBtn')}</button>
+          </div>
+        </main>
+      </div>`;
+
+    case 'mobile':
+      return `
+      <div class="flex-1 flex flex-col bg-[#FAF9FF]">
+        ${onboardingHeaderHTML({ backScreen: 'language', speak: t('enterMobile') })}
+        <main class="flex-1 flex items-center justify-center px-4 py-8">
+          <div class="card-soft w-full max-w-md p-8 text-center">
+            <h2 class="text-2xl font-bold text-[#1E1B4B] mb-2">${t('enterMobile')}</h2>
+            <p class="text-sm text-slate-500 mb-7">${t('mobileSub')}</p>
+            <div class="flex items-center border-2 border-[#DCD4FA] focus-within:border-[#5B2DD6] rounded-2xl bg-white px-4 py-3.5 mb-6">
+              <svg class="w-5 h-5 text-slate-400 mr-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+              <span class="font-bold text-[#1E1B4B] pr-3 border-r border-slate-200 mr-3">+91</span>
+              <input id="mobile-input" type="tel" maxlength="10" value="${state.mobile}" oninput="state.mobile = this.value.replace(/\\D/g,'').slice(0,10)" placeholder="${t('mobilePlaceholder')}" class="w-full text-base font-semibold text-[#1E1B4B] focus:outline-none" />
+            </div>
+            <button onclick="submitMobile()" class="btn-purple w-full py-3.5 rounded-full text-base font-bold shadow-md mb-5">${t('getOtp')}</button>
+            <div class="flex items-center justify-between text-sm">
+              <button onclick="showToast('Call 1800-120-4567')" class="text-[#5B2DD6] font-semibold hover:underline">${t('needHelp')}</button>
+              ${speakerBtnHTML(t('enterMobile'))}
+            </div>
+          </div>
+        </main>
+      </div>`;
+
+    case 'otp':
+      return `
+      <div class="flex-1 flex flex-col bg-[#FAF9FF]">
+        ${onboardingHeaderHTML({ backScreen: 'mobile', speak: t('enterOtp') })}
+        <main class="flex-1 flex items-center justify-center px-4 py-8">
+          <div class="card-soft w-full max-w-md p-8 text-center">
+            <div class="w-14 h-14 rounded-2xl bg-[#E8F8EE] text-[#18A957] flex items-center justify-center mx-auto mb-4">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+            </div>
+            <h2 class="text-2xl font-bold text-[#1E1B4B] mb-2">${t('enterOtp')}</h2>
+            <p class="text-sm text-slate-500 mb-2">${t('otpSentTo')} <span class="font-semibold text-[#1E1B4B]">+91 ${state.mobile || ''}</span>.</p>
+            ${state.generatedOtp ? `<p class="text-xs font-semibold text-[#5B2DD6] bg-[#EFEAFF] inline-block px-3 py-1 rounded-full mb-5">Mock OTP: ${state.generatedOtp}</p>` : '<div class="mb-5"></div>'}
+            <div class="grid grid-cols-6 gap-2 mb-5">
+              ${state.otp.map((d, i) => `
+                <input id="otp-box-${i}" type="tel" inputmode="numeric" maxlength="1" value="${d}" oninput="updateOtp(${i}, this.value)" onkeydown="handleOtpKey(${i}, event)" class="h-12 text-center text-xl font-bold text-[#1E1B4B] border-2 border-[#DCD4FA] focus:border-[#5B2DD6] rounded-xl bg-white focus:outline-none" />
+              `).join('')}
+            </div>
+            <p class="text-xs text-slate-500 mb-1">${t('didntReceive')}</p>
+            <button onclick="resendOtp()" id="otp-timer-text" class="text-sm font-bold text-[#5B2DD6] hover:underline mb-6">${t('resendOtp')} (00:${String(state.otpTimer).padStart(2, '0')})</button>
+            <button onclick="verifyOtp()" class="btn-purple w-full py-3.5 rounded-full text-base font-bold shadow-md">${t('verify')}</button>
+          </div>
+        </main>
+      </div>`;
+
+    case 'digilocker-opt':
+      return `
+      <div class="flex-1 flex flex-col bg-[#FAF9FF]">
+        ${onboardingHeaderHTML({ backScreen: 'otp', speak: t('digiPrompt') })}
+        <main class="flex-1 flex items-center justify-center px-4 py-8">
+          <div class="card-soft w-full max-w-md p-8 text-center">
+            <div class="flex items-center justify-center gap-2.5 mb-5">
+              <div class="w-11 h-11 rounded-xl bg-[#5B2DD6] text-white flex items-center justify-center">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+              </div>
+              <div class="text-left">
+                <div class="font-extrabold text-lg text-[#5B2DD6] leading-tight">DigiLocker</div>
+                <div class="text-xs text-slate-500">${t('digiSub')}</div>
+              </div>
+            </div>
+            <div class="w-40 h-28 mx-auto mb-5 rounded-2xl bg-[#EFEAFF] flex items-center justify-center">
+              <svg class="w-20 h-20 text-[#5B2DD6]" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            </div>
+            <h2 class="text-xl font-bold text-[#1E1B4B] mb-6">${t('digiPrompt')}</h2>
+            <div class="grid grid-cols-2 gap-3 mb-5">
+              <button onclick="goTo('digilocker-connect')" class="btn-green py-3.5 rounded-2xl font-bold text-base shadow-sm">${t('yes')}</button>
+              <button onclick="goTo('start-profile')" class="btn-red py-3.5 rounded-2xl font-bold text-base shadow-sm">${t('no')}</button>
+            </div>
+            <button onclick="goTo('start-profile')" class="text-sm font-semibold text-slate-500 hover:text-[#5B2DD6]">${t('skipNow')}</button>
+          </div>
+        </main>
+      </div>`;
+
+    case 'digilocker-connect':
+      return `
+      <div class="flex-1 flex flex-col bg-[#FAF9FF]">
+        ${onboardingHeaderHTML({ backScreen: 'digilocker-opt', speak: t('connectDigi') })}
+        <main class="flex-1 flex items-center justify-center px-4 py-8">
+          <div class="card-soft w-full max-w-md p-8 text-center">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#EFEAFF] text-[#5B2DD6] font-bold text-sm mb-5">
+              <span>DigiLocker</span>
+            </div>
+            <h2 class="text-2xl font-bold text-[#1E1B4B] mb-3">${t('connectDigi')}</h2>
+            <p class="text-sm text-slate-500 mb-8">${t('connectDigiSub')}</p>
+            <button onclick="state.digiLockerConnected = true; goTo('digilocker-done')" class="btn-green w-full py-3.5 rounded-full text-base font-bold shadow-md mb-3">${t('continueBtn')}</button>
+            <button onclick="goTo('start-profile')" class="w-full py-3.5 rounded-full text-base font-semibold text-slate-600 border border-[#DCD4FA] hover:bg-[#FAF9FF]">${t('maybeLater')}</button>
+          </div>
+        </main>
+      </div>`;
+
+    case 'digilocker-done':
+      return `
+      <div class="flex-1 flex flex-col bg-[#FAF9FF]">
+        ${onboardingHeaderHTML({ backScreen: 'digilocker-connect', speak: t('digiDone') })}
+        <main class="flex-1 flex items-center justify-center px-4 py-8">
+          <div class="card-soft w-full max-w-md p-8 text-center">
+            <div class="w-20 h-20 rounded-full bg-[#18A957] text-white flex items-center justify-center mx-auto mb-5 shadow-lg shadow-[#18A957]/25">
+              <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <h2 class="text-2xl font-bold text-[#1E1B4B] mb-2">${t('digiDone')}</h2>
+            <p class="text-sm text-slate-500 mb-8">${t('digiDoneSub')}</p>
+            <button onclick="goTo('start-profile')" class="btn-green w-full py-3.5 rounded-full text-base font-bold shadow-md">${t('continueBtn')}</button>
+          </div>
+        </main>
+      </div>`;
+
+    case 'start-profile':
+      return `
+      <div class="flex-1 flex flex-col bg-[#FAF9FF]">
+        ${onboardingHeaderHTML({ backScreen: state.digiLockerConnected ? 'digilocker-done' : 'digilocker-opt', step: 1, speak: t('startTitle') })}
+        <main class="flex-1 flex items-center justify-center px-4 py-8">
+          <div class="card-soft w-full max-w-md p-8 text-center">
+            <div class="w-24 h-24 rounded-full bg-[#EFEAFF] mx-auto mb-5 flex items-center justify-center">
+              <svg class="w-14 h-14 text-[#5B2DD6]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            </div>
+            <h2 class="text-2xl font-bold text-[#1E1B4B] mb-3">${t('startTitle')}</h2>
+            <p class="text-sm text-slate-500 mb-8">${t('startSub')}</p>
+            <button onclick="goTo('name')" class="btn-purple w-full py-3.5 rounded-full text-base font-bold shadow-md">${t('startBtn')}</button>
+          </div>
+        </main>
+      </div>`;
+
+    case 'name':
+      return `
+      <div class="flex-1 flex flex-col bg-[#FAF9FF]">
+        ${onboardingHeaderHTML({ backScreen: 'start-profile', step: 2, speak: t('askName') })}
+        <main class="flex-1 flex items-center justify-center px-4 py-8">
+          <div class="card-soft w-full max-w-md p-8 text-center">
+            <h2 class="text-2xl font-bold text-[#1E1B4B] mb-6">${t('askName')}</h2>
+            <input type="text" value="${state.name}" oninput="state.name = this.value" placeholder="${t('namePlaceholder')}" class="w-full border-2 border-[#DCD4FA] focus:border-[#5B2DD6] rounded-2xl px-4 py-3.5 text-base font-semibold text-[#1E1B4B] mb-6 focus:outline-none" />
+            <button onclick="if(!state.name.trim()){showToast('${t('namePlaceholder')}');return;} goTo('dob')" class="btn-purple w-full py-3.5 rounded-full text-base font-bold shadow-md mb-4">${t('next')}</button>
+            <button onclick="goTo('start-profile')" class="text-sm font-semibold text-[#5B2DD6] hover:underline">&lt; ${t('back')}</button>
+          </div>
+        </main>
+      </div>`;
+
+    case 'dob':
+      const days = Array.from({ length: 31 }, (_, i) => String(i + 1));
+      const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      const years = Array.from({ length: 70 }, (_, i) => String(2012 - i));
+      return `
+      <div class="flex-1 flex flex-col bg-[#FAF9FF]">
+        ${onboardingHeaderHTML({ backScreen: 'name', step: 3, speak: t('askDob') })}
+        <main class="flex-1 flex items-center justify-center px-4 py-8">
+          <div class="card-soft w-full max-w-md p-8 text-center">
+            <h2 class="text-2xl font-bold text-[#1E1B4B] mb-6">${t('askDob')}</h2>
+            <div class="grid grid-cols-3 gap-2.5 mb-7">
+              <select onchange="state.dobDay = this.value" class="border-2 border-[#DCD4FA] rounded-2xl py-3.5 px-3 font-semibold text-[#1E1B4B] bg-white">
+                <option value="">Day</option>
+                ${days.map(d => `<option value="${d}" ${state.dobDay === d ? 'selected' : ''}>${d}</option>`).join('')}
+              </select>
+              <select onchange="state.dobMonth = this.value" class="border-2 border-[#DCD4FA] rounded-2xl py-3.5 px-2 font-semibold text-[#1E1B4B] bg-white">
+                <option value="">Month</option>
+                ${months.map(m => `<option value="${m}" ${state.dobMonth === m ? 'selected' : ''}>${m}</option>`).join('')}
+              </select>
+              <select onchange="state.dobYear = this.value" class="border-2 border-[#DCD4FA] rounded-2xl py-3.5 px-3 font-semibold text-[#1E1B4B] bg-white">
+                <option value="">Year</option>
+                ${years.map(y => `<option value="${y}" ${state.dobYear === y ? 'selected' : ''}>${y}</option>`).join('')}
+              </select>
+            </div>
+            <button onclick="if(!state.dobDay||!state.dobMonth||!state.dobYear){showToast('Please select Day, Month, and Year');return;} goTo('gender')" class="btn-purple w-full py-3.5 rounded-full text-base font-bold shadow-md mb-4">${t('next')}</button>
+            <button onclick="goTo('name')" class="text-sm font-semibold text-[#5B2DD6] hover:underline">&lt; ${t('back')}</button>
+          </div>
+        </main>
+      </div>`;
+
+    case 'gender':
+      const genders = [
+        { val: 'Male', label: t('male'), color: '#2563EB', bg: '#EFF6FF', icon: '♂' },
+        { val: 'Female', label: t('female'), color: '#EC4899', bg: '#FDF2F8', icon: '♀' },
+        { val: 'Other', label: t('other'), color: '#7C3AED', bg: '#F5F3FF', icon: '⚧' }
+      ];
+      return `
+      <div class="flex-1 flex flex-col bg-[#FAF9FF]">
+        ${onboardingHeaderHTML({ backScreen: 'dob', step: 4, speak: t('askGender') })}
+        <main class="flex-1 flex items-center justify-center px-4 py-8">
+          <div class="card-soft w-full max-w-lg p-8 text-center">
+            <h2 class="text-2xl font-bold text-[#1E1B4B] mb-6">${t('askGender')}</h2>
+            <div class="grid grid-cols-3 gap-3 mb-7">
+              ${genders.map(g => `
+                <button onclick="state.gender='${g.val}'; render()" class="card-soft card-selectable p-5 flex flex-col items-center gap-2.5 ${state.gender === g.val ? 'card-selected' : ''}">
+                  <span class="w-12 h-12 rounded-full flex items-center justify-center text-2xl font-bold" style="background:${g.bg}; color:${g.color}">${g.icon}</span>
+                  <span class="font-bold text-sm text-[#1E1B4B]">${g.label}</span>
+                </button>`).join('')}
+            </div>
+            <button onclick="if(!state.gender){showToast('Please select your gender');return;} goTo('pincode')" class="btn-purple w-full py-3.5 rounded-full text-base font-bold shadow-md mb-4">${t('next')}</button>
+            <button onclick="goTo('dob')" class="text-sm font-semibold text-[#5B2DD6] hover:underline">&lt; ${t('back')}</button>
+          </div>
+        </main>
+      </div>`;
+
+    case 'pincode':
+      const pinStr = state.pincode.join('');
+      return `
+      <div class="flex-1 flex flex-col bg-[#FAF9FF]">
+        ${onboardingHeaderHTML({ backScreen: 'gender', step: 5, speak: t('askPin') })}
+        <main class="flex-1 flex items-center justify-center px-4 py-8">
+          <div class="card-soft w-full max-w-md p-8 text-center">
+            <h2 class="text-xl font-bold text-[#1E1B4B] mb-5">${t('askPin')}</h2>
+            <div class="grid grid-cols-6 gap-2 mb-5">
+              ${state.pincode.map(d => `<div class="h-12 flex items-center justify-center text-xl font-bold text-[#1E1B4B] border-2 border-[#DCD4FA] rounded-xl bg-white">${d || ''}</div>`).join('')}
+            </div>
+            <div class="grid grid-cols-3 gap-2 mb-5">
+              ${['1','2','3','4','5','6','7','8','9','Clear','0','⌫'].map(k => `
+                <button onclick="pressPinKey('${k}')" class="py-3 rounded-xl bg-[#F5F2FF] hover:bg-[#E7E0FF] font-bold text-lg text-[#1E1B4B]">${k}</button>
+              `).join('')}
+            </div>
+            <button onclick="lookupPinAndNext()" class="btn-purple w-full py-3.5 rounded-full text-base font-bold shadow-md mb-3 ${pinStr.length < 6 ? 'opacity-60' : ''}">${t('next')}</button>
+            <button onclick="goTo('gender')" class="text-sm font-semibold text-[#5B2DD6] hover:underline">&lt; ${t('back')}</button>
+          </div>
+        </main>
+      </div>`;
+
+    case 'location':
+      return `
+      <div class="flex-1 flex flex-col bg-[#FAF9FF]">
+        ${onboardingHeaderHTML({ backScreen: 'pincode', step: 6, speak: `${t('foundArea')}: ${state.city}, ${state.stateName}` })}
+        <main class="flex-1 flex items-center justify-center px-4 py-8">
+          <div class="card-soft w-full max-w-md p-8 text-center">
+            <h2 class="text-2xl font-bold text-[#1E1B4B] mb-5">${t('foundArea')}</h2>
+            <div class="rounded-2xl bg-[#F7F5FF] border border-[#DCD4FA] p-5 mb-7">
+              <div class="text-xl font-extrabold text-[#1E1B4B]">${state.city}</div>
+              <div class="text-base font-semibold text-slate-600">${state.stateName}</div>
+              <div class="text-base font-bold text-[#5B2DD6] mt-1">${state.pincode.join('')}</div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <button onclick="goTo('rural-urban')" class="btn-green py-3.5 rounded-full font-bold text-base shadow-sm">${t('confirm')}</button>
+              <button onclick="goTo('pincode')" class="py-3.5 rounded-full font-bold text-base text-[#18A957] border-2 border-[#18A957] hover:bg-[#E8F8EE]">${t('edit')}</button>
+            </div>
+          </div>
+        </main>
+      </div>`;
+
+    case 'rural-urban':
+      return `
+      <div class="flex-1 flex flex-col bg-[#FAF9FF]">
+        ${onboardingHeaderHTML({ backScreen: 'location', step: 7, speak: t('askArea') })}
+        <main class="flex-1 flex items-center justify-center px-4 py-8">
+          <div class="card-soft w-full max-w-lg p-8 text-center">
+            <h2 class="text-2xl font-bold text-[#1E1B4B] mb-6">${t('askArea')}</h2>
+            <div class="grid grid-cols-2 gap-4 mb-7">
+              <button onclick="state.areaType='Rural / Village'; render()" class="card-soft card-selectable p-5 flex flex-col items-center gap-3 ${state.areaType === 'Rural / Village' ? 'card-selected' : ''}">
+                <div class="w-24 h-20 rounded-xl bg-[#E8F8EE] flex items-center justify-center text-4xl">🏡</div>
+                <span class="font-bold text-sm text-[#1E1B4B]">${t('rural')}</span>
+              </button>
+              <button onclick="state.areaType='Urban / City'; render()" class="card-soft card-selectable p-5 flex flex-col items-center gap-3 ${state.areaType === 'Urban / City' ? 'card-selected' : ''}">
+                <div class="w-24 h-20 rounded-xl bg-[#EFF6FF] flex items-center justify-center text-4xl">🏙️</div>
+                <span class="font-bold text-sm text-[#1E1B4B]">${t('urban')}</span>
+              </button>
+            </div>
+            <button onclick="if(!state.areaType){showToast('Please select an area type');return;} goTo('occupation')" class="btn-purple w-full py-3.5 rounded-full text-base font-bold shadow-md mb-4">${t('next')}</button>
+            <button onclick="goTo('location')" class="text-sm font-semibold text-[#5B2DD6] hover:underline">&lt; ${t('back')}</button>
+          </div>
+        </main>
+      </div>`;
+
+    case 'occupation':
+      const occs = [
+        { val: 'Farmer', label: t('farmer'), emoji: '🚜', bg: '#E8F8EE' },
+        { val: 'Worker', label: t('worker'), emoji: '👷', bg: '#FEF9C3' },
+        { val: 'Business', label: t('business'), emoji: '🏪', bg: '#FFEDD5' },
+        { val: 'Student', label: t('student'), emoji: '🎓', bg: '#EFEAFF' },
+        { val: 'Homemaker', label: t('homemaker'), emoji: '🏠', bg: '#FCE7F3' },
+        { val: 'Other', label: t('other'), emoji: '👤', bg: '#E0F2FE' }
+      ];
+      return `
+      <div class="flex-1 flex flex-col bg-[#FAF9FF]">
+        ${onboardingHeaderHTML({ backScreen: 'rural-urban', step: 8, speak: t('askOcc') })}
+        <main class="flex-1 flex items-center justify-center px-4 py-8">
+          <div class="card-soft w-full max-w-lg p-8 text-center">
+            <h2 class="text-2xl font-bold text-[#1E1B4B] mb-6">${t('askOcc')}</h2>
+            <div class="grid grid-cols-3 gap-3 mb-7">
+              ${occs.map(o => `
+                <button onclick="state.occupation='${o.val}'; render()" class="card-soft card-selectable p-4 flex flex-col items-center gap-2 ${state.occupation === o.val ? 'card-selected' : ''}">
+                  <span class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl" style="background:${o.bg}">${o.emoji}</span>
+                  <span class="font-bold text-xs sm:text-sm text-[#1E1B4B]">${o.label}</span>
+                </button>`).join('')}
+            </div>
+            <button onclick="if(!state.occupation){showToast('Please select your occupation');return;} goTo(state.occupation === 'Student' ? 'education' : 'caste')" class="btn-purple w-full py-3.5 rounded-full text-base font-bold shadow-md mb-4">${t('next')}</button>
+            <button onclick="goTo('rural-urban')" class="text-sm font-semibold text-[#5B2DD6] hover:underline">&lt; ${t('back')}</button>
+          </div>
+        </main>
+      </div>`;
+
+    case 'education':
+      const edus = ['School', 'College', 'IT / Computer course', 'Skill / Vocational course', 'Other'];
+      return `
+      <div class="flex-1 flex flex-col bg-[#FAF9FF]">
+        ${onboardingHeaderHTML({ backScreen: 'occupation', step: 9, speak: t('askEdu') })}
+        <main class="flex-1 flex items-center justify-center px-4 py-8">
+          <div class="card-soft w-full max-w-md p-8 text-center">
+            <h2 class="text-2xl font-bold text-[#1E1B4B] mb-6">${t('askEdu')}</h2>
+            <div class="space-y-2.5 mb-7 text-left">
+              ${edus.map(e => `
+                <button onclick="state.education='${e}'; render()" class="w-full card-soft card-selectable px-4 py-3.5 flex items-center gap-3 ${state.education === e ? 'card-selected' : ''}">
+                  <span class="w-5 h-5 rounded-full border-2 flex items-center justify-center ${state.education === e ? 'border-[#5B2DD6]' : 'border-slate-300'}">
+                    ${state.education === e ? '<span class="w-2.5 h-2.5 rounded-full bg-[#5B2DD6]"></span>' : ''}
+                  </span>
+                  <span class="font-semibold text-sm text-[#1E1B4B]">${e}</span>
+                </button>`).join('')}
+            </div>
+            <button onclick="if(!state.education){showToast('Please select what you are studying');return;} goTo('caste')" class="btn-purple w-full py-3.5 rounded-full text-base font-bold shadow-md mb-4">${t('next')}</button>
+            <button onclick="goTo('occupation')" class="text-sm font-semibold text-[#5B2DD6] hover:underline">&lt; ${t('back')}</button>
+          </div>
+        </main>
+      </div>`;
+
+    case 'caste':
+      const cats = ['General', 'SC/ST', 'OBC', 'Other'];
+      return `
+      <div class="flex-1 flex flex-col bg-[#FAF9FF]">
+        ${onboardingHeaderHTML({ backScreen: state.occupation === 'Student' ? 'education' : 'occupation', step: 10, speak: t('askCaste') })}
+        <main class="flex-1 flex items-center justify-center px-4 py-8">
+          <div class="card-soft w-full max-w-md p-8 text-center">
+            <h2 class="text-2xl font-bold text-[#1E1B4B] mb-6">${t('askCaste')}</h2>
+            <div class="space-y-2.5 mb-7 text-left">
+              ${cats.map(c => `
+                <button onclick="state.category='${c}'; render()" class="w-full card-soft card-selectable px-4 py-3.5 flex items-center gap-3 ${state.category === c ? 'card-selected' : ''}">
+                  <span class="w-5 h-5 rounded-full border-2 flex items-center justify-center ${state.category === c ? 'border-[#5B2DD6]' : 'border-slate-300'}">
+                    ${state.category === c ? '<span class="w-2.5 h-2.5 rounded-full bg-[#5B2DD6]"></span>' : ''}
+                  </span>
+                  <span class="font-semibold text-sm text-[#1E1B4B]">${c}</span>
+                </button>`).join('')}
+            </div>
+            <button onclick="if(!state.category){showToast('Please select your caste/category');return;} goTo('disability')" class="btn-purple w-full py-3.5 rounded-full text-base font-bold shadow-md mb-4">${t('next')}</button>
+            <button onclick="goTo('${state.occupation === 'Student' ? 'education' : 'occupation'}')" class="text-sm font-semibold text-[#5B2DD6] hover:underline">&lt; ${t('back')}</button>
+          </div>
+        </main>
+      </div>`;
+
+    case 'disability':
+      return `
+      <div class="flex-1 flex flex-col bg-[#FAF9FF]">
+        ${onboardingHeaderHTML({ backScreen: 'caste', step: 11, speak: t('askDisability') })}
+        <main class="flex-1 flex items-center justify-center px-4 py-8">
+          <div class="card-soft w-full max-w-md p-8 text-center">
+            <h2 class="text-2xl font-bold text-[#1E1B4B] mb-6">${t('askDisability')}</h2>
+            <div class="grid grid-cols-2 gap-4 mb-7">
+              <button onclick="state.disability='Yes'; render()" class="py-6 rounded-2xl font-bold text-lg flex flex-col items-center gap-2 ${state.disability === 'Yes' ? 'bg-[#18A957] text-white ring-4 ring-[#18A957]/30' : 'bg-[#E8F8EE] text-[#18A957]'}">
+                <span class="w-10 h-10 rounded-full bg-white/25 flex items-center justify-center text-xl">✓</span>
+                <span>${t('yes')}</span>
+              </button>
+              <button onclick="state.disability='No'; render()" class="py-6 rounded-2xl font-bold text-lg flex flex-col items-center gap-2 ${state.disability === 'No' ? 'bg-[#E53935] text-white ring-4 ring-[#E53935]/30' : 'bg-[#FEE2E2] text-[#E53935]'}">
+                <span class="w-10 h-10 rounded-full bg-white/25 flex items-center justify-center text-xl">✕</span>
+                <span>${t('no')}</span>
+              </button>
+            </div>
+            <button onclick="if(!state.disability){showToast('Please select Yes or No');return;} state.editingSummary=false; goTo('profile-complete')" class="btn-purple w-full py-3.5 rounded-full text-base font-bold shadow-md mb-4">${t('next')}</button>
+            <button onclick="goTo('caste')" class="text-sm font-semibold text-[#5B2DD6] hover:underline">&lt; ${t('back')}</button>
+          </div>
+        </main>
+      </div>`;
+
+    case 'profile-complete':
+      return `
+      <div class="flex-1 flex flex-col bg-[#FAF9FF]">
+        ${onboardingHeaderHTML({ backScreen: 'disability', speak: t('profileComplete') })}
+        <main class="flex-1 flex items-center justify-center px-4 py-6">
+          <div class="card-soft w-full max-w-2xl p-6 sm:p-8">
+            <div class="text-center mb-6">
+              <div class="w-16 h-16 rounded-full bg-[#18A957] text-white flex items-center justify-center mx-auto mb-3 shadow-md shadow-[#18A957]/25">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <h2 class="text-2xl font-extrabold text-[#1E1B4B]">${t('profileComplete')}</h2>
+              <p class="text-sm text-slate-500 mt-1">${state.editingSummary ? t('profileEditSub') : t('profileReviewSub')}</p>
+            </div>
+            ${renderEditableProfileFields('editingSummary')}
+            <div class="grid grid-cols-2 gap-3 mt-7">
+              <button onclick="toggleSummaryEdit()" class="py-3.5 rounded-full text-base font-bold border-2 border-[#5B2DD6] text-[#5B2DD6] hover:bg-[#EFEAFF]">
+                ${state.editingSummary ? t('saveChanges') : t('edit')}
+              </button>
+              <button onclick="confirmProfileAndEnter()" class="btn-green py-3.5 rounded-full text-base font-bold shadow-md">
+                ${t('confirm')}
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>`;
+  }
+}
+
+function handleGetStarted() {
+  if (state.loggedInMobile && state.savedProfiles[state.loggedInMobile]) {
+    Object.assign(state, state.savedProfiles[state.loggedInMobile]);
+    goTo('dashboard');
+    return;
+  }
+  goTo('language');
+}
+
+function selectLanguageAndStay(code) {
+  state.langCode = code;
+  persistStore();
+  render();
+}
+
+function generateMockOtp() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+function submitMobile() {
+  if (state.mobile.length < 10) {
+    showToast('Please enter a valid 10-digit mobile number');
+    return;
+  }
+  state.generatedOtp = generateMockOtp();
+  state.otp = ['', '', '', '', '', ''];
+  showToast('Mock OTP sent: ' + state.generatedOtp);
+  goTo('otp');
+}
+
+function resendOtp() {
+  state.generatedOtp = generateMockOtp();
+  state.otp = ['', '', '', '', '', ''];
+  startOtpTimer();
+  showToast('New Mock OTP sent: ' + state.generatedOtp);
+  render();
+}
+
+function updateOtp(idx, val) {
+  const clean = val.replace(/\D/g, '').slice(0, 1);
+  state.otp[idx] = clean;
+  if (clean && idx < 5) {
+    const next = document.getElementById('otp-box-' + (idx + 1));
+    if (next) next.focus();
+  }
+}
+
+function handleOtpKey(idx, e) {
+  if (e.key === 'Backspace' && !state.otp[idx] && idx > 0) {
+    const prev = document.getElementById('otp-box-' + (idx - 1));
+    if (prev) prev.focus();
+  }
+}
+
+function verifyOtp() {
+  const entered = state.otp.join('');
+  if (entered.length < 6) {
+    showToast('Please enter all 6 digits of the OTP');
+    return;
+  }
+  if (state.generatedOtp && entered !== state.generatedOtp) {
+    showToast('Incorrect OTP. Mock OTP is ' + state.generatedOtp);
+    return;
+  }
+  // Check if this mobile number already has a saved profile
+  if (state.savedProfiles[state.mobile]) {
+    Object.assign(state, state.savedProfiles[state.mobile]);
+    state.loggedInMobile = state.mobile;
+    persistStore();
+    showToast('Welcome back, ' + (state.name || state.mobile) + '!');
+    goTo('dashboard');
+  } else {
+    // New or different mobile number -> reset profile fields for fresh onboarding
+    Object.assign(state, {
+      name: '', dobDay: '', dobMonth: '', dobYear: '', gender: '',
+      pincode: ['', '', '', '', '', ''], city: '', stateName: '',
+      areaType: '', occupation: '', education: '', category: '', disability: '',
+      digiLockerConnected: false
+    });
+    goTo('digilocker-opt');
+  }
+}
+
+function pressPinKey(k) {
+  if (k === 'Clear') {
+    state.pincode = ['', '', '', '', '', ''];
+  } else if (k === '⌫') {
+    const lastIdx = state.pincode.findLastIndex(d => d !== '');
+    if (lastIdx >= 0) state.pincode[lastIdx] = '';
+  } else {
+    const nextIdx = state.pincode.findIndex(d => d === '');
+    if (nextIdx >= 0) state.pincode[nextIdx] = k;
+  }
+  render();
+}
+
+function lookupPinAndNext() {
+  const code = state.pincode.join('');
+  if (code.length < 6) {
+    showToast('Please enter all 6 digits of your PIN code');
+    return;
+  }
+  const match = PIN_DIRECTORY[code] || { city: 'Bengaluru', state: 'Karnataka' };
+  state.city = match.city;
+  state.stateName = match.state;
+  goTo('location');
+}
+
+// ============================================================
+// PHASE 2: MAIN APPLICATION SHELL & 7 SCREENS
+// ============================================================
+function mainShell(contentHTML) {
+  const navItems = [
+    { id: 'mydocs', label: t('myDocs'), icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+    { id: 'find-schemes', label: t('findSchemes'), icon: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' },
+    { id: 'history', label: t('history'), icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' }
+  ];
+
+  const sidebarBody = `
+    <div class="p-6 flex flex-col items-center text-center">
+      <button onclick="goTo('dashboard')" class="flex flex-col items-center">
+        ${labhyaLogoSVG(54)}
+        <span class="text-2xl font-extrabold text-[#5B2DD6] mt-1">Labhya</span>
+      </button>
+      <p class="text-xs font-medium text-[#1E1B4B]/80 mt-1 whitespace-pre-line">${t('tagline')}</p>
+    </div>
+    <div class="px-4 space-y-2.5 flex-1">
+      <button onclick="startNewChat()" class="btn-purple w-full py-3 px-4 rounded-full font-bold text-sm flex items-center gap-2.5 shadow-md">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+        <span>${t('newChat')}</span>
+      </button>
+      ${navItems.map(n => `
+        <button onclick="goTo('${n.id}')" class="w-full py-3 px-4 rounded-full font-semibold text-sm flex items-center gap-2.5 ${state.screen === n.id ? 'bg-white text-[#5B2DD6] ring-2 ring-[#5B2DD6]/30 shadow-xs' : 'bg-white/90 hover:bg-white text-[#1E1B4B]'}">
+          <svg class="w-5 h-5 text-[#5B2DD6]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="${n.icon}"/></svg>
+          <span>${n.label}</span>
+        </button>`).join('')}
+      <div class="pt-4 mt-4 border-t border-[#DCD4FA] space-y-1">
+        <button onclick="logoutUser()" class="w-full py-2.5 px-4 rounded-xl text-sm font-semibold text-[#1E1B4B] hover:bg-white/70 flex items-center gap-2.5">
+          <svg class="w-5 h-5 text-[#5B2DD6]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          <span>${t('logout')}</span>
+        </button>
+        <button onclick="goTo('profile')" class="w-full py-2.5 px-4 rounded-xl text-sm font-semibold flex items-center gap-2.5 ${state.screen === 'profile' ? 'bg-white text-[#5B2DD6]' : 'text-[#1E1B4B] hover:bg-white/70'}">
+          <svg class="w-5 h-5 text-[#5B2DD6]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+          <span>${t('profile')}</span>
+        </button>
+      </div>
+    </div>
+    <div class="mt-auto overflow-hidden">${ruralLandscapeSVG('h-24')}</div>
+  `;
+
+  return `
+  <div class="flex-1 flex min-h-screen bg-white">
+    <aside class="hidden md:flex md:w-64 lg:w-72 flex-col bg-[#EFEAFF] border-r border-[#E2DCF8] shrink-0">
+      ${sidebarBody}
+    </aside>
+    ${state.mobileSidebarOpen ? `
+      <div class="fixed inset-0 z-50 md:hidden flex">
+        <div class="w-64 bg-[#EFEAFF] flex flex-col h-full shadow-2xl">${sidebarBody}</div>
+        <div onclick="state.mobileSidebarOpen=false; render()" class="flex-1 bg-black/40"></div>
+      </div>` : ''}
+    <div class="flex-1 flex flex-col min-w-0 bg-[#FCFBFF]">
+      <header class="px-6 py-4 flex items-center justify-between border-b border-[#EFEAFF] bg-white/80">
+        <div class="flex items-center gap-3">
+          <button onclick="state.mobileSidebarOpen=true; render()" class="md:hidden p-2 rounded-xl bg-[#EFEAFF] text-[#5B2DD6]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <span class="md:hidden font-extrabold text-lg text-[#5B2DD6]">Labhya</span>
+        </div>
+        <div class="flex items-center gap-3">
+          ${languagePillHTML()}
+        </div>
+      </header>
+      <main class="flex-1 p-5 sm:p-8 max-w-5xl w-full mx-auto flex flex-col">
+        ${contentHTML}
+      </main>
+    </div>
+  </div>`;
+}
+
+function logoutUser() {
+  state.loggedInMobile = '';
+  state.mobile = '';
+  persistStore();
+  showToast('Logged out');
+  goTo('welcome');
+}
+
+function startNewChat() {
+  state.chatMessages = [];
+  goTo('dashboard');
+  showToast('Started a new Labhya session');
+}
+
+function renderMainApp() {
+  switch (state.screen) {
+    case 'dashboard':
+      return mainShell(`
+        <div class="flex-1 flex flex-col justify-between gap-6">
+          <div class="flex flex-col items-center text-center max-w-2xl mx-auto w-full pt-2">
+            <div class="relative w-44 h-32 mb-4 flex items-center justify-center">
+              <div class="w-24 h-28 rounded-2xl bg-white border-2 border-[#5B2DD6]/30 shadow-md flex flex-col items-center justify-center p-3">
+                <div class="text-2xl mb-1">🏛️</div>
+                <div class="w-12 h-1.5 rounded bg-[#DCD4FA] mb-1.5"></div>
+                <div class="w-10 h-1.5 rounded bg-[#EFEAFF]"></div>
+              </div>
+              <div class="absolute right-4 bottom-2 w-14 h-16 rounded-2xl bg-[#18A957] text-white flex items-center justify-center shadow-lg border-2 border-white">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              </div>
+            </div>
+
+            <div class="w-full rounded-3xl bg-[#EFEAFF] px-6 py-6 mb-6">
+              <h1 class="text-2xl sm:text-3xl font-extrabold text-[#1E1B4B] mb-1.5">${t('howHelp')}</h1>
+              <p class="text-sm sm:text-base text-[#1E1B4B]/80">${t('howHelpSub')}</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full mb-4">
+              <button onclick="goTo('find-schemes')" class="card-soft card-selectable p-6 flex flex-col items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-[#5B2DD6] text-white flex items-center justify-center shadow-sm">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <span class="font-bold text-lg text-[#1E1B4B]">${t('findSchemes')}</span>
+              </button>
+              <button onclick="goTo('eligibility')" class="card-soft card-selectable p-6 flex flex-col items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-[#18A957] text-white flex items-center justify-center shadow-sm">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                </div>
+                <span class="font-bold text-lg text-[#1E1B4B]">${t('checkElig')}</span>
+              </button>
+            </div>
+            <button onclick="goTo('others')" class="card-soft card-selectable w-full p-5 flex flex-col items-center gap-2">
+              <div class="w-10 h-10 rounded-full bg-[#EFEAFF] text-[#5B2DD6] flex items-center justify-center font-extrabold tracking-widest">•••</div>
+              <span class="font-bold text-base text-[#1E1B4B]">${t('others')}</span>
+            </button>
+
+            ${state.chatMessages.length ? `
+              <div class="w-full mt-6 space-y-3 text-left">
+                ${state.chatMessages.map(m => `
+                  <div class="p-4 rounded-2xl ${m.role === 'user' ? 'bg-[#5B2DD6] text-white ml-12' : 'bg-[#EFEAFF] text-[#1E1B4B] mr-12'} text-sm">
+                    ${m.text}
+                  </div>`).join('')}
+              </div>` : ''}
+          </div>
+
+          <form onsubmit="handleChatSubmit(event)" class="max-w-2xl w-full mx-auto flex items-center gap-2 bg-white border-2 border-[#DCD4FA] focus-within:border-[#5B2DD6] rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-5 h-5 text-[#5B2DD6] shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" value="${state.chatInput}" oninput="state.chatInput = this.value" placeholder="${t('askSomething')}" class="flex-1 text-sm sm:text-base text-[#1E1B4B] focus:outline-none py-1.5" />
+            <button type="submit" class="w-10 h-10 rounded-full btn-purple flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+            </button>
+          </form>
+        </div>`);
+
+    case 'mydocs':
+      return mainShell(`
+        <div class="space-y-6">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h1 class="text-2xl font-extrabold text-[#1E1B4B]">${t('myDocs')}</h1>
+              <p class="text-sm text-slate-500">Manage your verified certificates and DigiLocker records.</p>
+            </div>
+            <button onclick="syncDigiLockerDocs()" class="btn-green px-5 py-2.5 rounded-full text-sm font-bold shadow-xs">
+              ${state.digiLockerConnected ? '↻ Sync DigiLocker' : t('connectDigi')}
+            </button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            ${state.docs.map(d => `
+              <div class="card-soft p-5 flex items-start justify-between gap-4">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-bold text-[#1E1B4B]">${d.name}</span>
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${d.status === 'Verified' ? 'bg-[#E8F8EE] text-[#18A957]' : 'bg-amber-100 text-amber-700'}">${d.status}</span>
+                  </div>
+                  <div class="text-xs text-slate-500">${d.issuer} · ${d.number}</div>
+                  <div class="text-xs text-slate-400 mt-1">${d.updated}</div>
+                </div>
+                <button onclick="verifyDoc('${d.id}')" class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-[#EFEAFF] text-[#5B2DD6] hover:bg-[#E1D7FF]">
+                  ${d.status === 'Verified' ? 'View' : 'Fetch'}
+                </button>
+              </div>`).join('')}
+          </div>
+        </div>`);
+
+    case 'find-schemes':
+      const cats = ['All', 'Agriculture', 'Education & Youth', 'Women & Family', 'Healthcare', 'Business & MSME', 'Housing'];
+      const filtered = SCHEMES.filter(s => {
+        const matchCat = state.schemeCategory === 'All' || s.category === state.schemeCategory;
+        const q = state.schemeSearch.toLowerCase();
+        const matchQ = !q || s.name.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q) || s.category.toLowerCase().includes(q);
+        return matchCat && matchQ;
+      });
+      return mainShell(`
+        <div class="space-y-5">
+          <div>
+            <h1 class="text-2xl font-extrabold text-[#1E1B4B]">${t('findSchemes')}</h1>
+            <p class="text-sm text-slate-500">${state.city || 'India'}, ${state.stateName || ''} ${state.occupation ? '(' + state.occupation + ')' : ''}</p>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-3">
+            <input type="text" value="${state.schemeSearch}" oninput="state.schemeSearch=this.value; render()" placeholder="Search schemes by name or keyword..." class="flex-1 border-2 border-[#DCD4FA] focus:border-[#5B2DD6] rounded-full px-5 py-2.5 text-sm focus:outline-none bg-white" />
+          </div>
+          <div class="flex flex-wrap gap-2">
+            ${cats.map(c => `
+              <button onclick="state.schemeCategory='${c}'; render()" class="px-4 py-1.5 rounded-full text-xs font-bold ${state.schemeCategory === c ? 'btn-purple' : 'bg-[#EFEAFF] text-[#5B2DD6] hover:bg-[#E1D7FF]'}">${c}</button>
+            `).join('')}
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            ${filtered.map(s => `
+              <div class="card-soft p-5 flex flex-col justify-between gap-4">
+                <div>
+                  <div class="flex items-center justify-between gap-2 mb-2">
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#EFEAFF] text-[#5B2DD6]">${s.category}</span>
+                    <span class="text-xs font-semibold text-slate-400">${s.level}</span>
+                  </div>
+                  <h3 class="font-extrabold text-lg text-[#1E1B4B] mb-1">${s.name}</h3>
+                  <p class="text-xs font-bold text-[#18A957] mb-2">${s.benefit}</p>
+                  <p class="text-sm text-slate-600">${s.desc}</p>
+                </div>
+                <div class="flex items-center justify-between pt-3 border-t border-[#EFEAFF]">
+                  <span class="text-xs text-slate-500">${s.docs.length} docs required</span>
+                  <button onclick="openSchemeModal('${s.id}')" class="btn-purple px-4 py-2 rounded-full text-xs font-bold">View Details</button>
+                </div>
+              </div>`).join('')}
+          </div>
+        </div>`);
+
+    case 'eligibility':
+      const eligibleList = SCHEMES.map(s => {
+        const c = s.criteria;
+        let ok = true;
+        if (c.gender && state.gender && !c.gender.includes(state.gender)) ok = false;
+        if (c.occupation && state.occupation && !c.occupation.includes(state.occupation)) ok = false;
+        if (c.category && state.category && !c.category.includes(state.category)) ok = false;
+        if (c.disability && state.disability && !c.disability.includes(state.disability)) ok = false;
+        if (c.state && state.stateName && c.state !== state.stateName) ok = false;
+        return { ...s, eligible: ok };
+      });
+      return mainShell(`
+        <div class="space-y-5">
+          <div class="rounded-3xl bg-[#EFEAFF] p-6 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h1 class="text-2xl font-extrabold text-[#1E1B4B]">${t('checkElig')}</h1>
+              <p class="text-sm text-[#1E1B4B]/80"><strong>${state.name || 'User'}</strong> · ${state.gender || '—'} · ${state.occupation || '—'} · ${state.category || '—'} · ${state.stateName || '—'}</p>
+            </div>
+            <button onclick="goTo('profile')" class="px-4 py-2 rounded-full bg-white text-[#5B2DD6] text-xs font-bold shadow-xs">${t('edit')}</button>
+          </div>
+          <div class="space-y-3">
+            ${eligibleList.map(s => `
+              <div class="card-soft p-5 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <div class="flex items-center gap-2.5 mb-1">
+                    <h3 class="font-bold text-base text-[#1E1B4B]">${s.name}</h3>
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${s.eligible ? 'bg-[#E8F8EE] text-[#18A957]' : 'bg-slate-100 text-slate-500'}">
+                      ${s.eligible ? '✓ Likely Eligible' : 'Criteria Mismatch'}
+                    </span>
+                  </div>
+                  <p class="text-xs text-slate-500">${s.benefit}</p>
+                </div>
+                <button onclick="openSchemeModal('${s.id}')" class="px-4 py-2 rounded-full text-xs font-bold ${s.eligible ? 'btn-green' : 'bg-[#EFEAFF] text-[#5B2DD6]'}">Check Details</button>
+              </div>`).join('')}
+          </div>
+        </div>`);
+
+    case 'history':
+      return mainShell(`
+        <div class="space-y-5">
+          <div class="flex items-center justify-between">
+            <div>
+              <h1 class="text-2xl font-extrabold text-[#1E1B4B]">${t('history')}</h1>
+              <p class="text-sm text-slate-500">Your recent scheme searches and eligibility checks.</p>
+            </div>
+            <button onclick="state.history=[]; render(); showToast('History cleared')" class="px-4 py-2 rounded-full text-xs font-bold text-[#E53935] bg-red-50 hover:bg-red-100">Clear History</button>
+          </div>
+          ${state.history.length ? `
+            <div class="space-y-3">
+              ${state.history.map(h => `
+                <div class="card-soft p-4 flex items-center justify-between gap-4">
+                  <div>
+                    <div class="font-bold text-sm text-[#1E1B4B]">${h.title}</div>
+                    <div class="text-xs text-slate-400">${h.time} · ${h.type}</div>
+                  </div>
+                  <button onclick="goTo('find-schemes')" class="text-xs font-bold text-[#5B2DD6] hover:underline">Open</button>
+                </div>`).join('')}
+            </div>` : `<div class="card-soft p-10 text-center text-sm text-slate-500">No recent activity yet.</div>`}
+        </div>`);
+
+    case 'profile':
+      return mainShell(`
+        <div class="space-y-6">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+              <div class="w-16 h-16 rounded-full bg-[#EFEAFF] text-[#5B2DD6] flex items-center justify-center text-2xl font-extrabold">${(state.name || 'U')[0].toUpperCase()}</div>
+              <div>
+                <h1 class="text-2xl font-extrabold text-[#1E1B4B]">${state.name || t('profile')}</h1>
+                <p class="text-sm text-slate-500">+91 ${state.mobile || '—'} · ${state.city || '—'}, ${state.stateName || '—'}</p>
+              </div>
+            </div>
+            <button onclick="toggleMainProfileEdit()" class="btn-purple px-5 py-2.5 rounded-full text-xs font-bold">
+              ${state.editingMainProfile ? t('saveChanges') : t('edit')}
+            </button>
+          </div>
+          <div class="card-soft p-6">
+            ${renderEditableProfileFields('editingMainProfile')}
+          </div>
+        </div>`);
+
+    case 'others':
+      return mainShell(`
+        <div class="space-y-5">
+          <div>
+            <h1 class="text-2xl font-extrabold text-[#1E1B4B]">${t('others')}</h1>
+            <p class="text-sm text-slate-500">Additional citizen support services and app settings.</p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="card-soft p-5 space-y-2">
+              <div class="text-2xl">📞</div>
+              <h3 class="font-bold text-[#1E1B4B]">Citizen Helpline</h3>
+              <p class="text-xs text-slate-500">Toll-free scheme guidance: 1800-120-4567 (Mon–Sat, 9 AM – 6 PM).</p>
+            </div>
+            <div class="card-soft p-5 space-y-2">
+              <div class="text-2xl">📍</div>
+              <h3 class="font-bold text-[#1E1B4B]">Nearest CSC Center</h3>
+              <p class="text-xs text-slate-500">Find Common Service Centers near PIN ${state.pincode.join('') || 'your area'}.</p>
+            </div>
+            <div class="card-soft p-5 space-y-2">
+              <div class="text-2xl">🔊</div>
+              <h3 class="font-bold text-[#1E1B4B]">Voice Readout</h3>
+              <button onclick="speakText('${t('howHelp')}')" class="btn-purple px-4 py-1.5 rounded-full text-xs font-bold mt-1">Test Voice</button>
+            </div>
+            <div class="card-soft p-5 space-y-2">
+              <div class="text-2xl">🌐</div>
+              <h3 class="font-bold text-[#1E1B4B]">Language Preference</h3>
+              <div class="pt-1">${languagePillHTML()}</div>
+            </div>
+          </div>
+        </div>`);
+  }
+}
+
+function handleChatSubmit(e) {
+  e.preventDefault();
+  const q = state.chatInput.trim();
+  if (!q) return;
+  state.chatMessages.push({ role: 'user', text: q });
+  state.history.unshift({ id: Date.now(), time: 'Just now', title: q, type: 'Chat' });
+  const ql = q.toLowerCase();
+  const match = SCHEMES.find(s => ql.includes(s.name.toLowerCase().split(' ')[0]) || ql.includes(s.category.toLowerCase().split(' ')[0]));
+  const reply = match
+    ? `<strong>${match.name}</strong> (${match.level}): ${match.benefit}. ${match.desc} Required docs: ${match.docs.join(', ')}.`
+    : `Based on your profile (${state.city || 'India'}, ${state.occupation || 'Citizen'}), explore <strong>Ayushman Bharat</strong> or open <em>${t('findSchemes')}</em>.`;
+  state.chatMessages.push({ role: 'assistant', text: reply });
+  state.chatInput = '';
+  render();
+}
+
+function syncDigiLockerDocs() {
+  state.digiLockerConnected = true;
+  state.docs.forEach(d => {
+    if (d.status === 'Pending') {
+      d.status = 'Verified';
+      d.updated = 'Synced via DigiLocker';
+      d.number = 'DL-' + Math.floor(10000 + Math.random() * 90000);
+    }
+  });
+  showToast('All DigiLocker documents synced!');
+  render();
+}
+
+function verifyDoc(id) {
+  const doc = state.docs.find(d => d.id === id);
+  if (!doc) return;
+  if (doc.status === 'Pending') {
+    doc.status = 'Verified';
+    doc.updated = 'Fetched via DigiLocker';
+    doc.number = 'DL-' + Math.floor(10000 + Math.random() * 90000);
+    showToast(doc.name + ' verified!');
+    render();
+  } else {
+    showToast(`${doc.name}: ${doc.number} (${doc.issuer})`);
+  }
+}
+
+function openSchemeModal(id) {
+  const s = SCHEMES.find(x => x.id === id);
+  if (!s) return;
+  state.history.unshift({ id: Date.now(), time: 'Just now', title: 'Viewed ' + s.name, type: 'Scheme' });
+  const backdrop = document.getElementById('modal-backdrop');
+  const content = document.getElementById('modal-content');
+  content.innerHTML = `
+    <div class="flex items-start justify-between gap-4 mb-4">
+      <div>
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#EFEAFF] text-[#5B2DD6]">${s.category} · ${s.level}</span>
+        <h3 class="text-xl font-extrabold text-[#1E1B4B] mt-2">${s.name}</h3>
+      </div>
+      <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center font-bold text-slate-600">✕</button>
+    </div>
+    <div class="p-3.5 rounded-2xl bg-[#E8F8EE] text-[#148F49] font-bold text-sm mb-4">${s.benefit}</div>
+    <p class="text-sm text-slate-600 mb-4">${s.desc}</p>
+    <div class="mb-6">
+      <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Required Documents</h4>
+      <div class="flex flex-wrap gap-2">
+        ${s.docs.map(d => `<span class="px-3 py-1 rounded-full bg-[#F7F5FF] border border-[#DCD4FA] text-xs font-semibold text-[#1E1B4B]">${d}</span>`).join('')}
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <a href="${s.applyUrl}" target="_blank" rel="noopener noreferrer" class="btn-purple flex-1 py-3 rounded-full text-center text-sm font-bold">Official Portal ↗</a>
+      <button onclick="closeModal()" class="px-5 py-3 rounded-full border border-[#DCD4FA] text-sm font-semibold text-slate-600">Close</button>
+    </div>`;
+  backdrop.classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('modal-backdrop').classList.add('hidden');
+}
+
+// ============================================================
+// EDITABLE PROFILE & SESSION SAVING
+// ============================================================
+function renderEditableProfileFields(flagKey) {
+  const isEdit = state[flagKey];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const pinVal = state.pincode.join('');
+  if (!isEdit) {
+    const rows = [
+      ['Full Name', state.name || 'Not set'],
+      ['Mobile Number', state.mobile ? '+91 ' + state.mobile : 'Not set'],
+      ['Date of Birth', (state.dobDay && state.dobMonth && state.dobYear) ? `${state.dobDay} ${state.dobMonth} ${state.dobYear}` : 'Not set'],
+      ['Gender', state.gender || 'Not set'],
+      ['PIN Code', pinVal || 'Not set'],
+      ['Location', (state.city && state.stateName) ? `${state.city}, ${state.stateName}` : 'Not set'],
+      ['Area Type', state.areaType || 'Not set'],
+      ['Occupation', state.occupation || 'Not set'],
+      ...(state.occupation === 'Student' ? [['Education', state.education || 'Not set']] : []),
+      ['Caste / Category', state.category || 'Not set'],
+      ['Disability', state.disability || 'Not set']
+    ];
+    return `
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+        ${rows.map(([k, v]) => `
+          <div class="p-3.5 rounded-xl bg-[#F7F5FF] border border-[#EAE6FA]">
+            <span class="text-xs text-slate-500 block mb-0.5">${k}</span>
+            <strong class="text-[#1E1B4B]">${v}</strong>
+          </div>`).join('')}
+      </div>`;
+  }
+  return `
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+      <div>
+        <label class="text-xs font-semibold text-slate-500 block mb-1">Full Name</label>
+        <input type="text" value="${state.name}" oninput="state.name=this.value" class="w-full border-2 border-[#DCD4FA] rounded-xl px-3 py-2 font-semibold text-[#1E1B4B] focus:border-[#5B2DD6] focus:outline-none" />
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-slate-500 block mb-1">Mobile Number</label>
+        <input type="tel" maxlength="10" value="${state.mobile}" oninput="state.mobile=this.value.replace(/\\D/g,'').slice(0,10)" class="w-full border-2 border-[#DCD4FA] rounded-xl px-3 py-2 font-semibold text-[#1E1B4B] focus:border-[#5B2DD6] focus:outline-none" />
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-slate-500 block mb-1">Date of Birth</label>
+        <div class="grid grid-cols-3 gap-1.5">
+          <input type="text" placeholder="Day" maxlength="2" value="${state.dobDay}" oninput="state.dobDay=this.value" class="border-2 border-[#DCD4FA] rounded-xl px-2 py-2 font-semibold text-[#1E1B4B] text-center" />
+          <select onchange="state.dobMonth=this.value" class="border-2 border-[#DCD4FA] rounded-xl px-1 py-2 font-semibold text-[#1E1B4B] bg-white">
+            <option value="">Month</option>
+            ${months.map(m => `<option value="${m}" ${state.dobMonth===m?'selected':''}>${m.slice(0,3)}</option>`).join('')}
+          </select>
+          <input type="text" placeholder="Year" maxlength="4" value="${state.dobYear}" oninput="state.dobYear=this.value" class="border-2 border-[#DCD4FA] rounded-xl px-2 py-2 font-semibold text-[#1E1B4B] text-center" />
+        </div>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-slate-500 block mb-1">Gender</label>
+        <select onchange="state.gender=this.value" class="w-full border-2 border-[#DCD4FA] rounded-xl px-3 py-2 font-semibold text-[#1E1B4B] bg-white">
+          <option value="">Select</option>
+          ${['Male','Female','Other'].map(g => `<option value="${g}" ${state.gender===g?'selected':''}>${g}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-slate-500 block mb-1">PIN Code</label>
+        <input type="tel" maxlength="6" value="${pinVal}" oninput="updatePinFromSummary(this.value)" class="w-full border-2 border-[#DCD4FA] rounded-xl px-3 py-2 font-semibold text-[#1E1B4B] focus:border-[#5B2DD6] focus:outline-none" />
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-slate-500 block mb-1">Area Type</label>
+        <select onchange="state.areaType=this.value" class="w-full border-2 border-[#DCD4FA] rounded-xl px-3 py-2 font-semibold text-[#1E1B4B] bg-white">
+          <option value="">Select</option>
+          ${['Rural / Village','Urban / City'].map(a => `<option value="${a}" ${state.areaType===a?'selected':''}>${a}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-slate-500 block mb-1">Occupation</label>
+        <select onchange="state.occupation=this.value; render()" class="w-full border-2 border-[#DCD4FA] rounded-xl px-3 py-2 font-semibold text-[#1E1B4B] bg-white">
+          <option value="">Select</option>
+          ${['Farmer','Worker','Business','Student','Homemaker','Other'].map(o => `<option value="${o}" ${state.occupation===o?'selected':''}>${o}</option>`).join('')}
+        </select>
+      </div>
+      ${state.occupation === 'Student' ? `
+      <div>
+        <label class="text-xs font-semibold text-slate-500 block mb-1">Education</label>
+        <select onchange="state.education=this.value" class="w-full border-2 border-[#DCD4FA] rounded-xl px-3 py-2 font-semibold text-[#1E1B4B] bg-white">
+          <option value="">Select</option>
+          ${['School','College','IT / Computer course','Skill / Vocational course','Other'].map(e => `<option value="${e}" ${state.education===e?'selected':''}>${e}</option>`).join('')}
+        </select>
+      </div>` : ''}
+      <div>
+        <label class="text-xs font-semibold text-slate-500 block mb-1">Caste / Category</label>
+        <select onchange="state.category=this.value" class="w-full border-2 border-[#DCD4FA] rounded-xl px-3 py-2 font-semibold text-[#1E1B4B] bg-white">
+          <option value="">Select</option>
+          ${['General','SC/ST','OBC','Other'].map(c => `<option value="${c}" ${state.category===c?'selected':''}>${c}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-slate-500 block mb-1">Disability</label>
+        <select onchange="state.disability=this.value" class="w-full border-2 border-[#DCD4FA] rounded-xl px-3 py-2 font-semibold text-[#1E1B4B] bg-white">
+          <option value="">Select</option>
+          ${['Yes','No'].map(d => `<option value="${d}" ${state.disability===d?'selected':''}>${d}</option>`).join('')}
+        </select>
+      </div>
+    </div>`;
+}
+
+function updatePinFromSummary(val) {
+  const clean = val.replace(/\D/g, '').slice(0, 6);
+  state.pincode = Array.from({ length: 6 }, (_, i) => clean[i] || '');
+  if (clean.length === 6) {
+    const match = PIN_DIRECTORY[clean] || { city: 'Bengaluru', state: 'Karnataka' };
+    state.city = match.city;
+    state.stateName = match.state;
+  }
+}
+
+function saveCurrentProfileToStore() {
+  if (!state.mobile) return;
+  state.savedProfiles[state.mobile] = {
+    mobile: state.mobile,
+    name: state.name,
+    dobDay: state.dobDay,
+    dobMonth: state.dobMonth,
+    dobYear: state.dobYear,
+    gender: state.gender,
+    pincode: [...state.pincode],
+    city: state.city,
+    stateName: state.stateName,
+    areaType: state.areaType,
+    occupation: state.occupation,
+    education: state.education,
+    category: state.category,
+    disability: state.disability,
+    digiLockerConnected: state.digiLockerConnected
+  };
+  state.loggedInMobile = state.mobile;
+  persistStore();
+}
+
+function toggleSummaryEdit() {
+  state.editingSummary = !state.editingSummary;
+  if (!state.editingSummary) {
+    saveCurrentProfileToStore();
+    showToast('Profile changes saved!');
+  }
+  render();
+}
+
+function toggleMainProfileEdit() {
+  state.editingMainProfile = !state.editingMainProfile;
+  if (!state.editingMainProfile) {
+    saveCurrentProfileToStore();
+    showToast('Profile updated!');
+  }
+  render();
+}
+
+function confirmProfileAndEnter() {
+  state.editingSummary = false;
+  saveCurrentProfileToStore();
+  showToast('Profile confirmed!');
+  goTo('dashboard');
+}
+
+// ============================================================
+// SCREEN DRAWER & RENDERER
+// ============================================================
+function toggleScreenDrawer() {
+  document.getElementById('screen-drawer').classList.toggle('hidden');
+}
+
+function renderScreenDrawer() {
+  const cur = SCREEN_LIST.find(s => s.id === state.screen) || SCREEN_LIST[0];
+  document.getElementById('nav-badge').textContent = `Screen ${cur.num} / ${SCREEN_LIST.length}`;
+  document.getElementById('screen-drawer-list').innerHTML = SCREEN_LIST.map(s => `
+    <button onclick="goTo('${s.id}'); toggleScreenDrawer()" class="w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between ${s.id === state.screen ? 'bg-[#5B2DD6] text-white font-bold' : 'hover:bg-[#EFEAFF] text-[#1E1B4B]'}">
+      <span>${s.num}. ${s.title}</span>
+      <span class="text-[10px] opacity-75">P${s.phase}</span>
+    </button>`).join('');
+}
+
+function render() {
+  const app = document.getElementById('app');
+  const isPhase2 = ['dashboard', 'mydocs', 'find-schemes', 'eligibility', 'history', 'profile', 'others'].includes(state.screen);
+  app.innerHTML = isPhase2 ? renderMainApp() : renderOnboarding();
+  renderScreenDrawer();
+}
+
+render();
+</script>
+</body>
+</html>
