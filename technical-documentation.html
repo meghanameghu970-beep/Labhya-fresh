@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Labhya — Technical Documentation</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --purple: #5B2DD6;
+      --purple-dark: #4A21B8;
+      --lavender: #EFEAFF;
+      --lavender-soft: #F7F5FF;
+      --lavender-border: #DCD4FA;
+      --navy: #1E1B4B;
+      --green: #18A957;
+      --green-dark: #148F49;
+      --red: #E53935;
+      --yellow: #FFCA28;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--navy);
+      background: #FAF9FF;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    .btn-purple {
+      background: var(--purple);
+      color: #fff;
+      transition: background-color 0.15s ease;
+    }
+    .btn-purple:hover { background: var(--purple-dark); }
+    .btn-green {
+      background: var(--green);
+      color: #fff;
+      transition: background-color 0.15s ease;
+    }
+    .btn-green:hover { background: var(--green-dark); }
+    .btn-red {
+      background: var(--red);
+      color: #fff;
+      transition: background-color 0.15s ease;
+    }
+    .btn-red:hover { background: #C62828; }
+    .card-soft {
+      background: #fff;
+      border: 1.5px solid #EAE6FA;
+      border-radius: 18px;
+      box-shadow: 0 4px 18px rgba(91, 45, 214, 0.05);
+    }
+    .card-selectable:hover {
+      border-color: var(--purple);
+      box-shadow: 0 6px 20px rgba(91, 45, 214, 0.10);
+    }
+    .card-selected {
+      border-color: var(--purple) !important;
+      background: #F4F0FF !important;
+      box-shadow: 0 6px 20px rgba(91, 45, 214, 0.14) !important;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: #D4CCF5; border-radius: 999px; }
+    h1, h2, h3, h4, h5, h6 { font-weight: 800; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Navigation -->
+  <nav class="bg-white border-b border-[#EFEAFF] sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-[#EFEAFF] flex items-center justify-center text-2xl font-extrabold">LH</div>
+          <span class="font-extrabold text-[#5B2DD6]">Labhya</span>
+        </div>
+        <div class="hidden md:flex items-center gap-8 text-sm text-slate-500">
+          <a href="#technical-specs" class hover:text-[#5B2DD6] transition-colors">Technical Specs</a>
+          <a href="#architecture" class hover:text-[#5B2DD6] transition-colors">Architecture</a>
+          <a href="#data-workflow" class hover:text-[#5B2DD6] transition-colors">Data Workflow</a>
+          <a href="#code-stats" class hover:text-[#5B2DD6] transition-colors">Code Stats</a>
+          <a href="#auth-state" class hover:text-[#5B2DD6] transition-colors">Auth State</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main max-w-7xl mx-auto py-8>
+
+    <!-- ============ 1. TECHNICAL SPECS ============ -->
+    <section id="technical-specs" class="mb-12">
+      <div class="grid max-w-2xl mx-auto mb-8">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <h2 class="text-xl font-bold mb-3">Programming Languages</h2>
+            <ul class="space-y-2">
+              <li><strong>HTML5</strong> — Markup structure</li>
+              <li><strong>JavaScript (ES6+)</strong> — Logic and interactivity</li>
+              <li><strong>CSS3</strong> — Styling with TailwindCSS and custom variables</li>
+            </ul>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold mb-3">Version & Dependencies</h2>
+            <ul class="space-y-2">
+              <li><strong>TailwindCSS</strong> — v3.4.17 (CDN)</li>
+              <li><strong>Google Fonts</strong> — Inter (weights: 400, 500, 600, 700, 800)</li>
+              <li><strong>No build step</strong> — Pure client-side execution</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid max-w-3xl mx-auto grid-cols-2 gap-4">
+        <div>
+          <h2 class="text-xl font-bold mb-3">Core Features</h2>
+          <ul class="space-y-2">
+            <li>5 languages: English, Hindi, Kannada, Tamil, Telugu</li>
+            <li>26 application screens (19 onboarding + 7 main)</li>
+            <li>DigiLocker document verification</li>
+            <li>Scheme search & eligibility checking</li>
+            <li>Profile persistence via localStorage</li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold mb-3">Environment</h2>
+          <ul class="space-y-2">
+            <li>Browser-only: Chrome, Firefox, Safari, Edge</li>
+            <li>No server-side requirements for prototype</li>
+            <li>Responsive: mobile-first, Tailwind breakpoints</li>
+            <li>SpeechSynthesis API for voice readout</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 2. APPLICATION ARCHITECTURE ============ -->
+    <section id="architecture" class="mb-12">
+      <h2 class="text-2xl font-bold mb-6">Architecture Overview</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="text-xl font-bold mb-4">SPA Structure</h3>
+          <p class="text-slate-600 mb-4">Single Page Application with client-side routing via <code>goTo(screenId)</code> function. No page reloads — UI updates dynamically based on <code>state.screen</code>.</p>
+
+          <h4 class="font-bold mb-3">Screen Phases</h4>
+          <div class="grid grid-cols-2 gap-2">
+            <span class="tag tag-purple text-xs">Phase 1: Onboarding (19 screens)</span>
+            <span class="tag tag-purple text-xs">Phase 2: Dashboard (7 screens)</span>
+          </div>
+
+          <h4 class="font-bold mt-4 mb-3">State Management</h4>
+          <p class="text-slate-600">Single <code>state</code> object (55 properties) initialized from localStorage <code>labhya_store_v1</code>. All UI rendered via <code>render()</code> function.</p>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold mb-4">Navigation Flow</h3>
+          <div class-space-y-2>
+            <p class="text-slate-600">App starts → <code>loadSavedStore()</code> → check <code>loggedInMobile</code> → dashboard if logged in, else onboarding</p>
+            <ol class="list-decimal list-inside mt-2 space-y-1 max-w-sm">
+              <li>welcome → language → mobile → OTP → profile → dashboard</li>
+              <li>Returning users skip straight to dashboard</li>
+            </ol>
+          </div>
+
+          <h3 class="font-bold mt-4 mb-3">Key Functions</h3>
+          <ul class="text-sm space-y-1">
+            <li><code>loadSavedStore()</code> — Restores state from localStorage</li>
+            <li><code>persistStore()</code> — Saves state to localStorage</li>
+            <li><code>handleGetStarted()</code> — Entry point, checks auth state</li>
+            <li><code>verifyOtp()</code> — Validates OTP, routes to dashboard or profile</li>
+            <li><code>saveCurrentProfileToStore()</code> — Persists profile data</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 class="font-bold mt-6 mb-3">Screen Overview</h3>
+      <div grid grid-cols-2 gap-2>
+        {% for screen in SCREEN_LIST %}
+          <span class="tag tag-purple text-xs">{{ screen.title }} (P{{ screen.num }})</span>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- ============ 3. DATA & WORKFLOW DIAGRAMS ============ -->
+    <section id="data-workflow" class="mb-12">
+      <h2 class="text-2xl font-bold mb-6">Data & Workflow Diagrams</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="text-xl font-bold mb-4">State Initialization Flow</h3>
+          <div class="bg-[#F7F5FF] p-4 rounded-xl mb-4">
+            <pre class="text-xs font-mono text-slate-500 overflow-auto">
+<code>loadSavedStore()
+  │
+  ├─ localStorage.getItem('labhya_store_v1')
+  │   │
+  │   └─ JSON.parse() → { savedProfiles, loggedInMobile, langCode }
+  │
+  └─ const state = {
+      screen: 'welcome',
+      langCode: 'en',
+      savedProfiles: {},
+      loggedInMobile: '',
+      ... (55 properties total)
+    }
+
+if (state.loggedInMobile && state.savedProfiles[state.loggedInMobile])
+  Object.assign(state, state.savedProfiles[state.loggedInMobile])</pre>
+          </div>
+
+          <h4 class="font-bold mb-3">Onboarding Workflow</h4>
+          <ol class="list-decimal list-inside space-y-2 text-sm max-w-md">
+            <li>Language selection → store langCode</li>
+            <li>Mobile number input → validate 10 digits</li>
+            <li>Submit → generate mock OTP, navigate to OTP screen</li>
+            <li>OTP verification → validate 6 digits</li>
+            <li>If <code>savedProfiles[mobile]</code> exists → restore profile → dashboard</li>
+            <li>If new user → full profile collection (name, DOB, gender, PIN, occupation, etc.)</li>
+            <li><code>confirmProfileAndEnter()</code> → <code>saveCurrentProfileToStore()</code> → dashboard</li>
+          </ol>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold mb-4">Authentication & Session Flow</h3>
+          <div class="bg-[#F7F5FF] p-4 rounded-xl mb-4">
+            <pre class="text-xs font-mono text-slate-500 overflow-auto">
+<code>handleGetStarted()
+  if (state.loggedInMobile && state.savedProfiles[state.loggedInMobile])
+    Object.assign(state, state.savedProfiles[state.loggedInMobile])
+    goTo('dashboard')
+  else
+    goTo('language')
+
+verifyOtp()
+  if (state.savedProfiles[state.mobile])
+    Object.assign(state, state.savedProfiles[state.mobile])
+    state.loggedInMobile = state.mobile
+    persistStore()
+    goTo('dashboard')  ← Returning user
+  else
+    // Fresh onboarding
+    Object.assign(state, {
+      name: '', dobDay: '', dobMonth: '', dobYear: '',
+      gender: '', pincode: ['','','','','',''],
+      city: '', stateName: '', areaType: '',
+      occupation: '', education: '', category: '', disability: '',
+      digiLockerConnected: false
+    })
+    goTo('digilocker-opt')</pre>
+          </div>
+
+          <h4 class="font-bold mb-3">Profile Persistence</h4>
+          <p class="text-slate-600">Profile data saved to <code>localStorage.key 'labhya_store_v1'</code> as JSON containing:</p>
+          <ul class="text-sm space-y-1">
+            <li>savedProfiles: {mobile: {name, dob, gender, pincode, city, stateName, ...}}</li>
+            <li>loggedInMobile: current user's mobile number</li>
+            <li>langCode: selected language</li>
+            <li>digiLockerConnected: boolean flag</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 class="font-bold mt-6 mb-3">Scheme Eligibility Workflow</h3>
+      <div class="bg-[#F7F5FF] p-4 rounded-xl">
+        <pre class="text-xs font-mono text-slate-500 overflow-auto">
+<code>SCHEMES.filter(s => {
+  const matchCat = state.schemeCategory === 'All' || s.category === state.schemeCategory;
+  const q = state.schemeSearch.toLowerCase();
+  const matchQ = !q || s.name.toLowerCase().includes(q);
+  return matchCat && matchQ;
+})
+
+eligibleList = SCHEMES.map(s => {
+  let ok = true;
+  if (c.gender && state.gender && !c.gender.includes(state.gender)) ok = false;
+  if (c.occupation && state.occupation && !c.occupation.includes(state.occupation)) ok = false;
+  if (c.state && state.stateName && c.state !== state.stateName) ok = false;
+  return { ...s, eligible: ok });
+})</pre>
+      </div>
+    </section>
+
+    <!-- ============ 4. CODEBASE STATISTICS ============ -->
+    <section id="code-stats" class="mb-12">
+      <h2 class="text-2xl font-bold mb-6">Codebase Statistics</h2>
+
+      <div class="grid grid-cols-2 gap-6">
+        <div>
+          <h3 class="text-xl font-bold mb-3">General Metrics</h3>
+          <ul class="space-y-3">
+            <li><strong>Total file size:</strong> 107,157 characters</li>
+            <li><strong>Total lines:</strong> 1,824 lines</li>
+            <li><strong>JavaScript functions:</strong> 42</li>
+            <li><strong>HTML elements used:</strong> 34 unique types</li>
+            <li><strong>CSS rules:</strong> 68+ declarations</li>
+            <li><strong>Comment lines:</strong> 21</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold mb-3">Screen & Content Metrics</h3>
+          <ul class="space-y-3">
+            <li><strong>Total screens:</strong> 26 (19 onboarding + 7 dashboard)</li>
+            <li><strong>Onboarding screens:</strong> 19 (Phase 1)</li>
+            <li><strong>Dashboard screens:</strong> 7 (Phase 2)</li>
+            <li><strong>Schemes defined:</strong> 12+ government schemes</li>
+            <li><strong>Language translations:</strong> 5 (en, hi, kn, ta, te)</li>
+            <li><strong>Document types:</strong> 6 (Aadhaar, PAN, Income Certificate, Caste Certificate, Residence Proof, DigiLocker)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-6">
+        <div>
+          <h3 class="text-xl font-bold mb-3">Function Breakdown</h3>
+          <ul class="space-y-2 text-sm">
+            <li><code>render / renderOnboarding / renderMainApp</code> — UI rendering (3 functions)</li>
+            <li><code>goTo</code> — Screen navigation (1 function)</li>
+            <li><code>handleGetStarted, verifyOtp, submitMobile</code> — Auth flow (3 functions)</li>
+            <li><code>saveCurrentProfileToStore, persistStore</code> — Data persistence (2 functions)</li>
+            <li><code>t (translation)</code>, <code>showToast</code>, <code>speakText</code> — i18n & UX (3 functions)</li>
+            <li><code>openSchemeModal, verifyDoc, syncDigiLockerDocs</code> — Feature functions (3 functions)</li>
+            <li><code>renderEditableProfileFields, toggleMainProfileEdit</code> — Profile edit (2 functions)</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold mb-3">Data Structures</h3>
+          <ul class="space-y-2 text-sm">
+            <li><code>state</code> object: 55 properties across 3 categories</li>
+              <ul>
+                <li>Screen & navigation (5)</li>
+                <li>User profile (14)</li>
+                <li>Scheme search & eligibility (5)</li>
+                <li>Chat & history (4)</li>
+                <li>DigiLocker & docs (6)</li>
+                <li>Languages & i18n (5)</li>
+                <li>Authentication (4)</li>
+                <li>Settings & preferences (17)</li>
+              </ul>
+            <li><code>SCHEMES</code> array: 12 scheme objects with</li>
+              <ul>
+                <li>id, name, level, category, benefit, desc</li>
+                <li>criteria (gender, occupation, state, category, disability)</li>
+                <li>required docs array, applyUrl</li>
+              </ul>
+            <li><code>LANGUAGES</code> array: 5 language objects with</li>
+              <ul>
+                <li>code, label, native, speech, sub</li>
+              </ul>
+            <li><code>I18N</code> object: 5 language dictionaries</li>
+              <ul>
+                <li>300+ translation keys across 5 languages</li>
+              </ul>
+            <li><code>PIN_DIRECTORY</code>: 7 PIN code mappings to cities/states</li>
+            <li><code>INITIAL_DOCS</code>: 6 predefined document templates</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 5. AUTHORIZATION STATE ============ -->
+    <section id="auth-state" class="mb-12">
+      <h2 class="text-2xl font-bold mb-6">Authentication & Authorization State</h2>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <div>
+          <h3 class="text-xl font-bold mb-3">Authentication State</h3>
+          <p class="text-slate-600">The application uses localStorage-based authentication with no external auth provider.</p>
+
+          <h4 class="font-bold mt-3">Key State Properties</h4>
+          <ul class="text-sm space-y-2">
+            <li><strong>loggedInMobile</strong> (string) — Mobile number of currently logged-in user, or empty string</li>
+            <li><code>savedProfiles</code> (object) — {mobile: {profile data}} map of all registered users</li>
+            <li><code>langCode</code> (string) — Selected language code: 'en', 'hi', 'kn', 'ta', 'te'</li>
+            <li><code>digiLockerConnected</code> (boolean) — Whether DigiLocker permissions have been granted</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold mb-3">Authentication Flow</h3>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-[#F7F5FF] p-3 rounded-xl">
+              <h4 class="font-bold">New User</h4>
+              <ol class="text-sm space-y-1">
+                <li>App start → <code>handleGetStarted()</code> → no <code>loggedInMobile</code> → language screen</li>
+                <li>Select language → persistStore()</li>
+                <li>Enter mobile → submitMobile() → generate mock OTP → OTP screen</li>
+                <li>Verify OTP → verifyOtp() → no saved profile → full onboarding</li>
+                <li>Complete profile → saveCurrentProfileToStore() → dashboard</li>
+              </ol>
+            </div>
+            <div class="bg-[#F7F5FF] p-3 rounded-xl">
+              <h4 class="font-bold">Returning User</h4>
+              <ol class="text-sm space-y-1">
+                <li>App start → <code>loadSavedStore()</code> → restore state from localStorage</li>
+                <li><code>handleGetStarted()</code> → <code>loggedInMobile</code> exists → Object.assign() profile</li>
+                <li>Navigate directly to <code>dashboard</code> — profile creation skipped</li>
+                <li>All profile data already available from previous session</li>
+              </ol>
+            </div>
+          </div>
+
+          <h4 class="font-bold mt-4">Authorization Levels</h4>
+          <ul class="text-sm space-y-1">
+            <li><b>Guest:</b> Can view welcome, language selection</li>
+            <li><b>Registered User:</b> Full access after mobile verification + profile completion</li>
+            <li><b>DigiLocker Connected:</b> Access to document verification features</li>
+            <li><b>Logged Out:</b> Session cleared, returns to welcome screen</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold mb-3">Session Persistence</h3>
+          <p class="text-slate-600">All state persists in <code>localStorage</code> under key <code>labhya_store_v1</code>.</p>
+
+          <h4 class="font-bold mt-3">Storage Structure</h4>
+          <pre class="text-xs font-mono text-slate-500 overflow-auto">
+<code>{
+  "savedProfiles": {
+    "9876543210": {
+      "mobile": "9876543210",
+      "name": "John Doe",
+      "dobDay": "15",
+      "dobMonth": "June",
+      "dobYear": "1990",
+      "gender": "Male",
+      "pincode": ["9","8","7","6","5","4"],
+      "city": "Bengaluru",
+      "stateName": "Karnataka",
+      "areaType": "Urban / City",
+      "occupation": "Worker",
+      "education": "",
+      "category": "General",
+      "disability": "No",
+      "digiLockerConnected": false
+    }
+  },
+  "loggedInMobile": "9876543210",
+  "langCode": "en"
+}</pre>
+
+          <h4 class="font-bold mt-3">Persistence Functions</h4>
+          <ul class="text-sm space-y-1">
+            <li><code>persistStore()</code> — Saves entire <code>state</code> object to localStorage</li>
+            <li><code>saveCurrentProfileToStore()</code> — Saves profile after onboarding completion, also sets <code>loggedInMobile</code></li>
+            <li><code>loadSavedStore()</code> — Restores state on app initialization</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-[#1E1B4B] text-white py-8 mt-auto">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div>
+          <h4 class="font-bold mb-3">Labhya</h4>
+          <p class="text-slate-400 text-sm">Government Schemes Made Simple</p>
+        </div>
+        <div>
+          <h4 class="font-bold mb-3">Screens</h4>
+          <ul class="text-slate-400 text-sm">
+            <li>Welcome (P1)</li>
+            <li>Language (P1)</li>
+            <li>Mobile (P1)</li>
+            <li>OTP (P1)</li>
+            <li>Dashboard (P2)</li>
+            <li>My Docs (P2)</li>
+            <li>Find Schemes (P2)</li>
+            <li>Eligibility (P2)</li>
+            <li>History (P2)</li>
+            <li>Profile (P2)</li>
+            <li>Others (P2)</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-bold mb-3">Languages</h4>
+          <div class="flex gap-2">
+            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-[#EFEAFF] text-[#5B2DD6]">EN</span>
+            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">HI</span>
+            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-[#EFEAFF] text-[#5B2DD6]">KN</span>
+            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">TA</span>
+            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-[#EFEAFF] text-[#5B2DD6]">TE</span>
+          </div>
+        </div>
+        <div>
+          <h4 class="font-bold mb-3">Version</h4>
+          <p class="text-slate-400 text-sm">v1.0 — Prototype</p>
+          <p class="text-slate-400 text-sm">HTML + Vanilla JS</p>
+        </div>
+      </div>
+      <div class="mt-6 pt-6 border-t border-[#EFEAFF] text-center text-slate-400 text-xs">
+        © 2026 Labhya. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ============================================================
+    // COPYRIGHT YEAR UPDATE
+    // ============================================================
+    document.querySelector('footer .text-sm:last-child')?.addEventListener('click', () => {
+      const yearEl = document.querySelector('footer .text-sm:last-child');
+      yearEl.textContent = new Date().getFullYear();
+    });
+  </script>
+</body>
+</html>
