@@ -565,6 +565,29 @@ function showToast(msg) {
   el._timer = setTimeout(() => el.classList.add('hidden'), 2600);
 }
 
+// Keyboard Enter key support - activate focused buttons without duplicate submissions
+document.onkeydown = function(e) {
+  if (e.key === 'Enter') {
+    const focused = document.activeElement;
+    // Activate focused buttons
+    if (focused.tagName === 'BUTTON') {
+      e.preventDefault();
+      // Avoid duplicate: only click if not already processing
+      if (!focused.disabled) {
+        focused.click();
+      }
+    }
+    // For OTP inputs: allow natural navigation between fields
+    else if (focused.tagName === 'INPUT' && focused.type !== 'text' && focused.type !== 'file') {
+      // Let numeric/OTP inputs handle Enter naturally
+    }
+    // For text/textarea: let Enter work naturally
+    else if (focused.tagName === 'TEXTAREA' || (focused.tagName === 'INPUT' && focused.type === 'text')) {
+      // Allow natural Enter behavior for text fields
+    }
+  }
+}
+
 function speakText(text) {
   try {
     if ('speechSynthesis' in window) {
@@ -1400,6 +1423,17 @@ function renderMainApp() {
                   ${d.status === 'Verified' ? 'View' : 'Fetch'}
                 </button>
               </div>`).join('')}
+            <div class="col-span-2 pt-3 border-t border-[#DCD4FA]">
+              <div class="flex items-center gap-2">
+                <input type="file" id="doc-upload" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="handleDocUpload(event)">
+                <button onclick="document.getElementById('doc-upload').click()" class="btn-green px-4 py-2 rounded-full text-sm font-bold shadow-xs">
+                  ${t('connectDigi')}
+                </button>
+                <span class="text-xs text-slate-500 ml-2">Upload Doc</span>
+              </div>
+              <div id="doc-preview" class="mt-2 hidden grid grid-cols-2 gap-2">
+              </div>
+            </div>
           </div>
         </div>`);
 
@@ -1601,7 +1635,149 @@ function verifyDoc(id) {
   }
 }
 
-function openSchemeModal(id) {
+function handleDocUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg'];
+  if (!allowedTypes.includes(file.type) && !file.name.match(/\.(pdf|jpe?g)$/i)) {
+    showToast('Please upload PDF, JPG, or PNG files only.');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const previewUrl = e.target.result;
+    const existingDoc = state.docs.find(d => d.name === 'Custom Document');
+    if (existingDoc) {
+      existingDoc.status = 'Verified';
+      existingDoc.updated = 'Uploaded via device';
+      existingDoc.number = file.name;
+      existingDoc.preview = previewUrl;
+    } else {
+      const newDoc = {
+        id: 'custom-' + Date.now(),
+        name: file.name.replace(/\.[^.]*.$/, ''),
+        issuer: 'Device',
+        status: 'Verified',
+        updated: 'Uploaded via device',
+        number: file.name,
+        preview: previewUrl
+      };
+      state.docs.push(newDoc);
+    }
+    showToast('Document uploaded successfully!');
+    render();
+  };
+
+  if (file.type) {
+    reader.readAsDataURL(file);
+  } else {
+    reader.readAsDataURL(file.slice(0, file.size));
+  }
+}
+
+// Clean up the file input value after reading
+function cleanupDocUploadInput() {
+  const input = document.getElementById('doc-upload');
+  if (input) input.value = '';
+}
+
+function openDocUpload() {
+  const input = document.getElementById('doc-upload');
+  if (input) {
+    input.click();
+    // Call cleanup after a short delay to allow file selection
+    setTimeout(cleanupDocUploadInput, 100);
+  }
+}
+
+// For camera access on supported devices
+async function captureImage() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    const videoElement = document.createElement('video');
+    videoElement.srcObject = stream;
+    videoElement.play();
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    canvas.getContext('2d').drawImage(videoElement, 0, 0, 512, 512);
+
+    const image = canvas.toDataURL('image/jpeg');
+    const file = new Blob([image], { type: 'image/jpeg' });
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+
+    document.getElementById('doc-upload').files = dataTransfer.files;
+    document.getElementById('doc-upload').dispatchEvent(new Event('change', { bubbles: true }));
+
+    stream.getTracks().forEach(track => track.stop());
+  } catch (err) {
+    showToast('Camera access denied or not supported.');
+  }
+}
+
+// For gallery/photo selection
+function selectFromGallery() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.pdf,.jpg,.jpeg,.png';
+  input.onchange = function(e) {
+    document.getElementById('doc-upload').files = e.target.files;
+    document.getElementById('doc-upload').dispatchEvent(new Event('change', { bubbles: true }));
+    setTimeout(cleanupDocUploadInput, 100);
+  };
+  input.click();
+}
+
+// Handle document replace
+function handleDocReplace(id) {
+  const doc = state.docs.find(d => d.id === id);
+  if (!doc) return;
+
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.pdf,.jpg,.jpeg,.png';
+  input.onchange = function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      doc.status = 'Verified';
+      doc.updated = 'Updated via device';
+      doc.number = file.name;
+      doc.preview = e.target.result;
+      showToast('Document updated successfully!');
+      render();
+    };
+    if (file.type) {
+      reader.readAsDataURL(file);
+    }
+    cleanupDocUploadInput();
+  };
+  input.click();
+}
+
+// Handle document remove
+function handleDocRemove(id) {
+  const idx = state.docs.findIndex(d => d.id === id);
+  if (idx > -1) {
+    state.docs.splice(idx, 1);
+    showToast('Document removed.');
+    render();
+  }
+}
+
+// Initialize document upload button
+document.addEventListener('DOMContentLoaded', function() {
+  const uploadBtn = document.querySelector('button[onclick*="connectDigi"]');
+  if (uploadBtn) {
+    uploadBtn.onclick = openDocUpload;
+  }
+});
   const s = SCHEMES.find(x => x.id === id);
   if (!s) return;
   state.history.unshift({ id: Date.now(), time: 'Just now', title: 'Viewed ' + s.name, type: 'Scheme' });
