@@ -30,39 +30,15 @@
       padding: 0;
       -webkit-font-smoothing: antialiased;
     }
-    .btn-purple {
-      background: var(--purple);
-      color: #fff;
-      transition: background-color 0.15s ease;
-    }
+    .btn-purple { background: var(--purple); color: #fff; transition: background-color 0.15s ease; }
     .btn-purple:hover { background: var(--purple-dark); }
-    .btn-green {
-      background: var(--green);
-      color: #fff;
-      transition: background-color 0.15s ease;
-    }
+    .btn-green { background: var(--green); color: #fff; transition: background-color 0.15s ease; }
     .btn-green:hover { background: var(--green-dark); }
-    .btn-red {
-      background: var(--red);
-      color: #fff;
-      transition: background-color 0.15s ease;
-    }
+    .btn-red { background: var(--red); color: #fff; transition: background-color 0.15s ease; }
     .btn-red:hover { background: #C62828; }
-    .card-soft {
-      background: #fff;
-      border: 1.5px solid #EAE6FA;
-      border-radius: 18px;
-      box-shadow: 0 4px 18px rgba(91, 45, 214, 0.05);
-    }
-    .card-selectable:hover {
-      border-color: var(--purple);
-      box-shadow: 0 6px 20px rgba(91, 45, 214, 0.10);
-    }
-    .card-selected {
-      border-color: var(--purple) !important;
-      background: #F4F0FF !important;
-      box-shadow: 0 6px 20px rgba(91, 45, 214, 0.14) !important;
-    }
+    .card-soft { background: #fff; border: 1.5px solid #EAE6FA; border-radius: 18px; box-shadow: 0 4px 18px rgba(91,45,214,0.05); }
+    .card-selectable:hover { border-color: var(--purple); box-shadow: 0 6px 20px rgba(91,45,214,0.10); }
+    .card-selected { border-color: var(--purple) !important; background: #F4F0FF !important; box-shadow: 0 6px 20px rgba(91,45,214,0.14) !important; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-thumb { background: #D4CCF5; border-radius: 999px; }
     h1, h2, h3, h4, h5, h6 { font-weight: 800; }
@@ -82,7 +58,7 @@
         <div class="hidden md:flex items-center gap-8 text-sm text-slate-500">
           <a href="#technical-specs" class hover:text-[#5B2DD6] transition-colors">Technical Specs</a>
           <a href="#architecture" class hover:text-[#5B2DD6] transition-colors">Architecture</a>
-          <a href="#data-workflow" class hover:text-[#5B2DD6] transition-colors">Data Workflow</a>
+          <a href="#data-workflow" class hover:text-[#5B2DD6] transition-colors">Data & Workflow</a>
           <a href="#code-stats" class hover:text-[#5B2DD6] transition-colors">Code Stats</a>
           <a href="#auth-state" class hover:text-[#5B2DD6] transition-colors">Auth State</a>
         </div>
@@ -92,7 +68,7 @@
 
   <main max-w-7xl mx-auto py-8>
 
-    <!-- ============ 1. TECHNICAL SPECS ============ -->
+    <!-- ============ 1. FULL-STACK TECHNICAL INFORMATION ============ -->
     <section id="technical-specs" class="mb-12">
       <div class="grid max-w-2xl mx-auto mb-8">
         <div class="grid grid-cols-2 gap-4">
@@ -101,15 +77,16 @@
             <ul class="space-y-2">
               <li><strong>HTML5</strong> — Markup structure</li>
               <li><strong>JavaScript (ES6+)</strong> — Logic and interactivity</li>
-              <li><strong>CSS3</strong> — Styling with TailwindCSS and custom variables</li>
+              <li><strong>CSS3</strong> — Styling with custom properties and TailwindCSS</li>
             </ul>
           </div>
           <div>
-            <h2 class="text-xl font-bold mb-3">Version & Dependencies</h2>
+            <h2 class="text-xl font-bold mb-3">Version & Environment</h2>
             <ul class="space-y-2">
               <li><strong>TailwindCSS</strong> — v3.4.17 (CDN)</li>
               <li><strong>Google Fonts</strong> — Inter (weights: 400, 500, 600, 700, 800)</li>
               <li><strong>No build step</strong> — Pure client-side execution</li>
+              <li><strong>Browser support</strong> — Chrome, Firefox, Safari, Edge</li>
             </ul>
           </div>
         </div>
@@ -120,10 +97,12 @@
           <h2 class="text-xl font-bold mb-3">Core Features</h2>
           <ul class="space-y-2">
             <li>5 languages: English, Hindi, Kannada, Tamil, Telugu</li>
-            <li>26 application screens (19 onboarding + 7 main)</li>
+            <li>26 application screens (19 onboarding + 7 dashboard)</li>
             <li>DigiLocker document verification</li>
             <li>Scheme search & eligibility checking</li>
             <li>Profile persistence via localStorage</li>
+            <li>Keyboard Enter key support</li>
+            <li>Document camera/gallery/upload</li>
           </ul>
         </div>
         <div>
@@ -133,6 +112,7 @@
             <li>No server-side requirements for prototype</li>
             <li>Responsive: mobile-first, Tailwind breakpoints</li>
             <li>SpeechSynthesis API for voice readout</li>
+            <li>Full i18N: 5 languages × 300+ translation keys</li>
           </ul>
         </div>
       </div>
@@ -154,12 +134,12 @@
           </div>
 
           <h4 class="font-bold mt-4 mb-3">State Management</h4>
-          <p class="text-slate-600">Single <code>state</code> object (55 properties) initialized from localStorage <code>labhya_store_v1</code>. All UI rendered via <code>render()</code> function.</p>
+          <p class="text-slate-600">Single <code>state</code> object (~33 properties) initialized from localStorage <code>labhya_store_v1</code>. All UI rendered via <code>render()</code> function.</p>
         </div>
 
         <div>
           <h3 class="text-xl font-bold mb-4">Navigation Flow</h3>
-          <div class-space-y-2>
+          <div class="space-y-2">
             <p class="text-slate-600">App starts → <code>loadSavedStore()</code> → check <code>loggedInMobile</code> → dashboard if logged in, else onboarding</p>
             <ol class="list-decimal list-inside mt-2 space-y-1 max-w-sm">
               <li>welcome → language → mobile → OTP → profile → dashboard</li>
@@ -173,16 +153,30 @@
             <li><code>persistStore()</code> — Saves state to localStorage</li>
             <li><code>handleGetStarted()</code> — Entry point, checks auth state</li>
             <li><code>verifyOtp()</code> — Validates OTP, routes to dashboard or profile</li>
-            <li><code>saveCurrentProfileToStore()</code> — Persists profile data</li>
+            <li><code>saveCurrentProfileToStore()</code> — Persists profile after onboarding</li>
           </ul>
         </div>
       </div>
 
-      <h3 class="font-bold mt-6 mb-3">Screen Overview</h3>
-      <div grid grid-cols-2 gap-2>
-        {% for screen in SCREEN_LIST %}
-          <span class="tag tag-purple text-xs">{{ screen.title }} (P{{ screen.num }})</span>
-        {% endfor %}
+      <h3 class="font-bold mt-6 mb-3">Architecture Diagram (Text)</h3>
+      <div class="bg-[#F7F5FF] p-4 rounded-xl mb-4">
+        <pre class="text-xs font-mono text-slate-500 overflow-auto">
+<code>
+┌─────────────────────────────────────────────────────────────┐
+│                    Labhya SPA                               │
+│                                                             │
+│   ──────┐     ──────     ──────     ──────     ──────     │
+│   /     │    /      │    /      │    /      │    /      │
+│   welcome   language   mobile    OTP     profile    dashboard  │
+│   ──────┘     ──────     ──────     ──────     ──────     │
+│         ↑                                                                   │
+│         └────── localStorage 'labhya_store_v1' ◄──────────────┘
+│                                                             │
+│   State: { screen, langCode, savedProfiles, loggedInMobile │
+   ... 33 properties total }                                │
+│                                                             │
+│   render() → UI updated dynamically (no page reload)       │
+└─────────────────────────────────────────────────────────────┘</pre>
       </div>
     </section>
 
@@ -206,7 +200,7 @@
       langCode: 'en',
       savedProfiles: {},
       loggedInMobile: '',
-      ... (55 properties total)
+      ... (33 properties total)
     }
 
 if (state.loggedInMobile && state.savedProfiles[state.loggedInMobile])
@@ -232,30 +226,22 @@ if (state.loggedInMobile && state.savedProfiles[state.loggedInMobile])
 <code>handleGetStarted()
   if (state.loggedInMobile && state.savedProfiles[state.loggedInMobile])
     Object.assign(state, state.savedProfiles[state.loggedInMobile])
-    goTo('dashboard')
+    goTo('dashboard')  ← Returning user
   else
-    goTo('language')
+    goTo('language')  ← New user
 
 verifyOtp()
   if (state.savedProfiles[state.mobile])
     Object.assign(state, state.savedProfiles[state.mobile])
     state.loggedInMobile = state.mobile
     persistStore()
-    goTo('dashboard')  ← Returning user
+    goTo('dashboard')  ← Existing user
   else
-    // Fresh onboarding
-    Object.assign(state, {
-      name: '', dobDay: '', dobMonth: '', dobYear: '',
-      gender: '', pincode: ['','','','','',''],
-      city: '', stateName: '', areaType: '',
-      occupation: '', education: '', category: '', disability: '',
-      digiLockerConnected: false
-    })
-    goTo('digilocker-opt')</pre>
+    → Fresh onboarding (profile collection)</pre>
           </div>
 
           <h4 class="font-bold mb-3">Profile Persistence</h4>
-          <p class="text-slate-600">Profile data saved to <code>localStorage.key 'labhya_store_v1'</code> as JSON containing:</p>
+          <p class="text-slate-600">Profile data saved to <code>localStorage</code> under key <code>labhya_store_v1</code> as JSON containing:</p>
           <ul class="text-sm space-y-1">
             <li>savedProfiles: {mobile: {name, dob, gender, pincode, city, stateName, ...}}</li>
             <li>loggedInMobile: current user's mobile number</li>
@@ -263,11 +249,10 @@ verifyOtp()
             <li>digiLockerConnected: boolean flag</li>
           </ul>
         </div>
-      </div>
 
-      <h3 class="font-bold mt-6 mb-3">Scheme Eligibility Workflow</h3>
-      <div class="bg-[#F7F5FF] p-4 rounded-xl">
-        <pre class="text-xs font-mono text-slate-500 overflow-auto">
+        <h3 class="font-bold mt-6 mb-3">Scheme Eligibility Workflow</h3>
+        <div class="bg-[#F7F5FF] p-4 rounded-xl">
+          <pre class="text-xs font-mono text-slate-500 overflow-auto">
 <code>SCHEMES.filter(s => {
   const matchCat = state.schemeCategory === 'All' || s.category === state.schemeCategory;
   const q = state.schemeSearch.toLowerCase();
@@ -282,6 +267,7 @@ eligibleList = SCHEMES.map(s => {
   if (c.state && state.stateName && c.state !== state.stateName) ok = false;
   return { ...s, eligible: ok });
 })</pre>
+        </div>
       </div>
     </section>
 
@@ -293,12 +279,12 @@ eligibleList = SCHEMES.map(s => {
         <div>
           <h3 class="text-xl font-bold mb-3">General Metrics</h3>
           <ul class="space-y-3">
-            <li><strong>Total file size:</strong> 107,157 characters</li>
-            <li><strong>Total lines:</strong> 1,824 lines</li>
-            <li><strong>JavaScript functions:</strong> 42</li>
-            <li><strong>HTML elements used:</strong> 34 unique types</li>
-            <li><strong>CSS rules:</strong> 68+ declarations</li>
-            <li><strong>Comment lines:</strong> 21</li>
+            <li><strong>Total file size:</strong> 112,879 characters</li>
+            <li><strong>Total lines:</strong> 2,319 lines</li>
+            <li><strong>JavaScript functions:</strong> 55</li>
+            <li><strong>Unique HTML elements:</strong> 42</li>
+            <li><strong>CSS rules:</strong> 635+ declarations</li>
+            <li><strong>Comment lines:</strong> present throughout</li>
           </ul>
         </div>
 
@@ -326,13 +312,14 @@ eligibleList = SCHEMES.map(s => {
             <li><code>t (translation)</code>, <code>showToast</code>, <code>speakText</code> — i18n & UX (3 functions)</li>
             <li><code>openSchemeModal, verifyDoc, syncDigiLockerDocs</code> — Feature functions (3 functions)</li>
             <li><code>renderEditableProfileFields, toggleMainProfileEdit</code> — Profile edit (2 functions)</li>
+            <li><code>handleDocUpload, captureImage, selectFromGallery</code> — Document upload (3 functions)</li>
           </ul>
         </div>
 
         <div>
           <h3 class="text-xl font-bold mb-3">Data Structures</h3>
           <ul class="space-y-2 text-sm">
-            <li><code>state</code> object: 55 properties across 3 categories</li>
+            <li><code>state</code> object: ~35 properties across 3 categories</li>
               <ul>
                 <li>Screen & navigation (5)</li>
                 <li>User profile (14)</li>
@@ -343,7 +330,7 @@ eligibleList = SCHEMES.map(s => {
                 <li>Authentication (4)</li>
                 <li>Settings & preferences (17)</li>
               </ul>
-            <li><code>SCHEMES</code> array: 12 scheme objects with</li>
+            <li><code>SCHEMES</code> array: 12+ scheme objects with</li>
               <ul>
                 <li>id, name, level, category, benefit, desc</li>
                 <li>criteria (gender, occupation, state, category, disability)</li>
@@ -364,7 +351,7 @@ eligibleList = SCHEMES.map(s => {
       </div>
     </section>
 
-    <!-- ============ 5. AUTHORIZATION STATE ============ -->
+    <!-- ============ 5. AUTHENTICATION & AUTHORIZATION STATE ============ -->
     <section id="auth-state" class="mb-12">
       <h2 class="text-2xl font-bold mb-6">Authentication & Authorization State</h2>
 
@@ -423,8 +410,7 @@ eligibleList = SCHEMES.map(s => {
 
           <h4 class="font-bold mt-3">Storage Structure</h4>
           <pre class="text-xs font-mono text-slate-500 overflow-auto">
-<code>{
-  "savedProfiles": {
+<code>{ "savedProfiles": {
     "9876543210": {
       "mobile": "9876543210",
       "name": "John Doe",
@@ -444,8 +430,7 @@ eligibleList = SCHEMES.map(s => {
     }
   },
   "loggedInMobile": "9876543210",
-  "langCode": "en"
-}</pre>
+  "langCode": "en" }</pre>
 
           <h4 class="font-bold mt-3">Persistence Functions</h4>
           <ul class="text-sm space-y-1">
@@ -495,8 +480,12 @@ eligibleList = SCHEMES.map(s => {
         </div>
         <div>
           <h4 class="font-bold mb-3">Version</h4>
-          <p class="text-slate-400 text-sm">v1.0 — Prototype</p>
-          <p class="text-slate-400 text-sm">HTML + Vanilla JS</p>
+          <p class="text-slate-400 text-sm">v1.0 — Prototype with Enhancements</p>
+          <p class="text-slate-400 text-sm">HTML + Vanilla JS + TailwindCSS</p>
+        </div>
+        <div>
+          <h4 class="font-bold mb-3">Key Flow</h4>
+          <p class="text-slate-400 text-sm">New: Onboarding → Dashboard | Returning: Direct Dashboard</p>
         </div>
       </div>
       <div class="mt-6 pt-6 border-t border-[#EFEAFF] text-center text-slate-400 text-xs">
@@ -506,13 +495,9 @@ eligibleList = SCHEMES.map(s => {
   </footer>
 
   <script>
-    // ============================================================
-    // COPYRIGHT YEAR UPDATE
-    // ============================================================
-    document.querySelector('footer .text-sm:last-child')?.addEventListener('click', () => {
-      const yearEl = document.querySelector('footer .text-sm:last-child');
-      yearEl.textContent = new Date().getFullYear();
-    });
+    // Copyright year update
+    const yearEl = document.querySelector('footer .text-sm:last-child');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
   </script>
 </body>
 </html>
