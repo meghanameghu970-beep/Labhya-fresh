@@ -26,7 +26,7 @@ app.add_middleware(
 
 # In-memory OTP store for login flow
 OTP_STORE: dict[str, str] = {}
-STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
+STATIC_DIR = os.path.dirname(__file__)
 
 
 @app.on_event("startup")
